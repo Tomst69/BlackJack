@@ -42,18 +42,16 @@ body{
   border-bottom:3px solid var(--brass-dim);
   overflow:hidden;
 }
-.table::before{
-  content:"";position:absolute;left:50%;top:-46%;transform:translateX(-50%);
-  width:132%;height:112%;border-radius:50%;
-  border:1px solid rgba(199,164,97,.32);
-  box-shadow:inset 0 0 0 6px rgba(199,164,97,.07);
-  pointer-events:none;
-}
+
 /* printed on the felt, arched like a real blackjack layout */
 .inscription{display:block;width:min(100%,340px);height:auto;margin:0 auto;position:relative;overflow:visible;flex:0 0 auto}
 .table.tight .inscription{width:min(100%,270px)}
-.inscription .i1{font-family:'Cormorant Garamond',Georgia,serif;font-size:15px;font-weight:600;letter-spacing:.14em;fill:rgba(199,164,97,.8)}
-.inscription .i2{font-family:'Jost',sans-serif;font-size:7.4px;font-weight:400;letter-spacing:.17em;fill:rgba(233,224,204,.46)}
+.inscription .i1{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;letter-spacing:.14em;fill:rgba(199,164,97,.8);
+  font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1}
+.inscription .i2{font-family:'Jost',sans-serif;font-weight:400;letter-spacing:.17em;fill:rgba(233,224,204,.46);
+  font-variant-numeric:lining-nums;font-feature-settings:"lnum" 1}
+.inscription .rail{fill:none;stroke:rgba(199,164,97,.34);stroke-width:1}
+.inscription .rail2{fill:none;stroke:rgba(199,164,97,.07);stroke-width:6}
 
 .shoe{
   padding:0;cursor:pointer;
@@ -117,24 +115,24 @@ body{
   background:radial-gradient(circle at 50% 50%,rgba(199,164,97,.22) 0 18%,transparent 19%);
 }
 
-.corner{position:absolute;line-height:.92;text-align:center;font-weight:500;font-size:calc(var(--card-h)*.148)}
-.corner.tl{top:calc(var(--card-h)*.045);left:calc(var(--card-w)*.065)}
-.corner.br{bottom:calc(var(--card-h)*.045);right:calc(var(--card-w)*.065);transform:rotate(180deg)}
-.corner i{display:block;font-style:normal;font-size:calc(var(--card-h)*.125);margin-top:1px}
+.corner{position:absolute;line-height:.92;text-align:center;font-weight:500;font-size:calc(var(--card-h)*.13)}
+.corner.tl{top:calc(var(--card-h)*.04);left:calc(var(--card-w)*.05)}
+.corner.br{bottom:calc(var(--card-h)*.04);right:calc(var(--card-w)*.05);transform:rotate(180deg)}
+.corner i{display:block;font-style:normal;font-size:calc(var(--card-h)*.11);margin-top:1px}
 .pips{position:absolute;inset:calc(var(--card-h)*.17) calc(var(--card-w)*.21)}
 .pip{position:absolute;transform:translate(-50%,-50%);font-size:calc(var(--card-h)*.15);line-height:1}
 .pip.inv{transform:translate(-50%,-50%) rotate(180deg)}
 .ace{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(var(--card-h)*.38)}
-.court{position:absolute;inset:calc(var(--card-h)*.1) calc(var(--card-w)*.29);border:1px solid currentColor;border-radius:3px;
+.court{position:absolute;inset:calc(var(--card-h)*.075) calc(var(--card-w)*.225);border:1px solid currentColor;border-radius:3px;
   display:flex;align-items:center;justify-content:center;
-  font-family:'Cormorant Garamond',Georgia,serif;font-size:calc(var(--card-h)*.32);font-weight:600;
+  font-family:'Cormorant Garamond',Georgia,serif;font-size:calc(var(--card-h)*.36);font-weight:600;
   background:rgba(168,31,45,.04)}
 .red{color:var(--pip-red)} .blk{color:var(--ink)}
 
-.spot{position:relative;z-index:2;margin:2px auto 8px;width:104px;height:34px;flex:0 0 auto;
+.spot{position:relative;z-index:2;margin:9px auto 3px;width:104px;height:34px;flex:0 0 auto;
   display:flex;align-items:center;justify-content:center}
 .spot::before{
-  content:"";position:absolute;inset:-13px 0;border:1px solid rgba(199,164,97,.3);
+  content:"";position:absolute;inset:-7px 0 -9px;border:1px solid rgba(199,164,97,.3);
   border-radius:50%;
 }
 .stack{display:flex}
@@ -369,8 +367,8 @@ button[hidden]{display:none!important}
 .cutcard.on{opacity:1}
 .shoe.shuffling{animation:shufwig .34s ease-in-out 4}
 @keyframes shufwig{0%,100%{transform:none}30%{transform:translateX(-2px) rotate(-3deg)}70%{transform:translateX(2px) rotate(3deg)}}
-.trainbadge{position:absolute;top:19px;right:calc(70px + var(--sr));z-index:5;font-size:10px;letter-spacing:.16em;color:var(--brass);
-  border:1px solid rgba(199,164,97,.45);border-radius:10px;padding:2px 7px;display:none;background:rgba(0,0,0,.25);font-weight:400}
+.trainbadge{position:absolute;top:16px;right:calc(70px + var(--sr));z-index:5;font-size:10px;line-height:16px;height:22px;letter-spacing:.16em;color:var(--brass);
+  border:1px solid rgba(199,164,97,.45);border-radius:11px;padding:2px 6px 2px 8px;display:none;background:rgba(0,0,0,.25);font-weight:400}
 .trainbadge.on{display:block}
 .mist{margin:4px 0 14px}
 .sbox u.up{color:#8fd1a8}.sbox u.dn{color:#e39a85}
@@ -416,8 +414,9 @@ button[hidden]{display:none!important}
       <div class="hand" id="dhand"></div>
       <div class="pill ghost" id="dpill">—</div>
     </div>
-    <svg class="inscription" id="ins" viewBox="0 0 320 44" role="img" aria-label="Blackjack pays 3 to 2">
+    <svg class="inscription" id="ins" viewBox="0 0 320 50" role="img" aria-label="Blackjack pays 3 to 2">
       <defs><path id="insA" d="M20 9 Q160 25 300 9"/><path id="insB" d="M20 25 Q160 41 300 25"/></defs>
+      <path class="rail2" id="insR2" d=""/><path class="rail" id="insR" d=""/>
       <text class="i1"><textPath href="#insA" xlink:href="#insA" startOffset="50%" text-anchor="middle" id="ins1">BLACKJACK PAYS 3 TO 2</textPath></text>
       <text class="i2"><textPath href="#insB" xlink:href="#insB" startOffset="50%" text-anchor="middle" id="ins2">DEALER MUST DRAW TO 16 AND STAND ON ALL 17s</textPath></text>
     </svg>
@@ -949,7 +948,7 @@ function fly(el){
   var from=$("shoe").getBoundingClientRect(),to=el.getBoundingClientRect();
   var dx=(from.left+from.width/2)-(to.left+to.width/2);
   var dy=(from.top+from.height/2)-(to.top+to.height/2);
-  var tilt=(Math.random()*2.4-1.2).toFixed(2);
+  var tilt="0";
   el.style.transform="translate("+dx+"px,"+dy+"px) rotate(-16deg) scale(.8)";
   el.offsetHeight;
   el.classList.add("flying");
@@ -992,10 +991,11 @@ function pill(node,txt,cls){
   node.className="pill"+(cls?" "+cls:"")+(txt?"":" ghost");
   node.textContent=txt||"—";
 }
-function totalText(cs){
+/* "7 / 17" only while the hand can still draw; a finished hand shows its total */
+function totalText(cs,live){
   var s=score(cs);
   if(s.t>21)return "Bust "+s.t;
-  return s.soft?(s.t-10)+" / "+s.t:""+s.t;
+  return s.soft&&live&&s.t<21?(s.t-10)+" / "+s.t:""+s.t;
 }
 /* what lies in the betting spot: the bet before the deal, then the hands'
    stakes (a busted hand's chips are taken at once), then whatever the payout
@@ -1160,14 +1160,14 @@ function renderDealer(){
   var s=score(dealer);
   if(!dealer.length){pill($("dpill"),"");return;}
   if(phase==="play"||phase==="deal"){pill($("dpill"),"Showing "+val(dealer[0]));}
-  else{pill($("dpill"),totalText(dealer),s.t>21?"bust":(phase==="done"&&DRES?DRES:(dealer.length===2&&s.t===21?"bj":"")));}
+  else{pill($("dpill"),totalText(dealer,false),s.t>21?"bust":(phase==="done"&&DRES?DRES:(dealer.length===2&&s.t===21?"bj":"")));}
 }
 function renderHandLabels(){
   var boxes=$("phands").children,i;
   for(i=0;i<boxes.length;i++){
     var h=hands[i];if(!h)continue;
     var lab=boxes[i].querySelector(".pill"),s=score(h.cards);
-    var txt=h.surrendered?"Surrendered":totalText(h.cards);
+    var txt=h.surrendered?"Surrendered":totalText(h.cards,phase==="play"&&!h.done);
     if(isBJ(h))txt="Blackjack";
     if(hands.length>1)txt=txt+" · "+h.bet;
     var oc=phase==="done"?(h.res==="W"?"win":(h.res==="L"||h.surrendered?"lose":"")):"";
@@ -1220,7 +1220,7 @@ function renderActions(){
     setOff("surrender",!(live&&canSurrenderHand(h)));
   }
 }
-function render(){renderMeters();renderDealer();renderHandLabels();renderActions();}
+function render(){renderMeters();renderDealer();renderHandLabels();renderActions();layoutInscription();}
 
 function newHandBox(index){
   var box=document.createElement("div");box.className="handbox";
@@ -1377,13 +1377,41 @@ function fitLayout(){
   var H=t.clientHeight,root=document.documentElement.style;
   /* the felt inscription always stays; on short screens it just gets smaller */
   var fixed=50+6+44+2*30+10,tw=Math.max(200,t.clientWidth-32);
-  var insH=function(w){return Math.min(tw,w)*44/320+4;};
+  var insH=function(w){return Math.min(tw,w)*50/320+4;};
   var ch=Math.floor((H-fixed-insH(340))/2),tight=false;
   if(ch<86){ch=Math.floor((H-fixed-insH(270))/2);tight=true;}
   ch=Math.max(52,Math.min(116,ch));
   t.classList.toggle("tight",tight);
   root.setProperty("--card-h",ch+"px");root.setProperty("--card-w",Math.round(ch*.705)+"px");
   fitHands();
+  layoutInscription();
+}
+/* the printed felt: the two lines of text and the brass rail under them sit on
+   concentric circles, so they stay parallel at any width; the rail runs from
+   edge to edge of the table like the line on a real layout */
+var INSW=0,INSY=-1,INST=-1;
+function layoutInscription(){
+  var svg=$("ins"),t=$("tbl");if(!svg||!t)return;
+  var sr=svg.getBoundingClientRect(),tr=t.getBoundingClientRect();
+  if(!sr.width)return;
+  var W=sr.width,H=W*50/320,k=W/320;
+  if(Math.abs(W-INSW)<.5&&Math.abs(sr.top-tr.top-INSY)<.5&&Math.abs(tr.width-INST)<.5)return;
+  INSW=W;INSY=sr.top-tr.top;INST=tr.width;
+  svg.setAttribute("viewBox","0 0 "+W.toFixed(2)+" "+H.toFixed(2));
+  var cx=W/2,R=1150*k,yA=21*k,yB=yA+15.5*k,yR=yB+11*k,yR2=yR-4.5*k;
+  /* left and right reach: the text paths span the svg, the rail the whole table */
+  var L=-(sr.left-tr.left)+.5,Rt=(tr.right-sr.left)-.5;
+  function arc(y,r,x1,x2){
+    var cy=y-r;           /* centre above: the lower half of the circle, a gentle smile */
+    var f=function(x){var dx=x-cx;return cy+Math.sqrt(Math.max(0,r*r-dx*dx));};
+    return "M"+x1.toFixed(2)+" "+f(x1).toFixed(2)+" A"+r.toFixed(2)+" "+r.toFixed(2)+" 0 0 0 "+x2.toFixed(2)+" "+f(x2).toFixed(2);
+  }
+  $("insA").setAttribute("d",arc(yA,R,0,W));
+  $("insB").setAttribute("d",arc(yB,R+(yB-yA),0,W));
+  $("insR").setAttribute("d",arc(yR,R+(yR-yA),L,Rt));
+  $("insR2").setAttribute("d",arc(yR2,R+(yR2-yA),L,Rt));
+  var t1=svg.querySelector(".i1"),t2=svg.querySelector(".i2");
+  t1.setAttribute("font-size",(15*k).toFixed(2));t2.setAttribute("font-size",(7.6*k).toFixed(2));
 }
 /* split hands share one row: shrink the player's cards until they fit */
 function fitHands(){
