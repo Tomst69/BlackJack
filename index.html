@@ -88,7 +88,8 @@ body{
   background:rgba(0,0,0,.24);white-space:nowrap;font-weight:400;
 }
 .pill.bust{border-color:#c0563f;color:#f0b6a4}
-.pill.bj{border-color:var(--brass);color:#f0dca8;background:rgba(199,164,97,.14)}
+.pill.bj,.pill.win{border-color:var(--brass);color:#f0dca8;background:rgba(199,164,97,.14)}
+.pill.lose{border-color:#c0563f;color:#f0b6a4}
 .pill.ghost{opacity:0}
 
 .card{
@@ -124,9 +125,9 @@ body{
 .pip{position:absolute;transform:translate(-50%,-50%);font-size:calc(var(--card-h)*.15);line-height:1}
 .pip.inv{transform:translate(-50%,-50%) rotate(180deg)}
 .ace{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(var(--card-h)*.38)}
-.court{position:absolute;inset:calc(var(--card-h)*.16) calc(var(--card-w)*.19);border:1px solid currentColor;border-radius:3px;
+.court{position:absolute;inset:calc(var(--card-h)*.1) calc(var(--card-w)*.29);border:1px solid currentColor;border-radius:3px;
   display:flex;align-items:center;justify-content:center;
-  font-family:'Cormorant Garamond',Georgia,serif;font-size:calc(var(--card-h)*.34);font-weight:600;
+  font-family:'Cormorant Garamond',Georgia,serif;font-size:calc(var(--card-h)*.32);font-weight:600;
   background:rgba(168,31,45,.04)}
 .red{color:var(--pip-red)} .blk{color:var(--ink)}
 
@@ -239,7 +240,7 @@ button.act.lit{background:rgba(199,164,97,.22);border-color:var(--brass)}
 button.meter{cursor:pointer;border-radius:4px;transition:opacity .15s}
 button.meter:hover{opacity:.75}
 
-.msg{height:44px;overflow:hidden;display:block;padding:2px 0 6px!important;margin-bottom:8px!important;font-size:13px!important;line-height:1.4!important}
+.msg{text-align:center;height:44px;overflow:hidden;display:block;padding:2px 0 6px!important;margin-bottom:8px!important;font-size:13px!important;line-height:1.4!important}
 .row2,.row3{display:grid;gap:8px}
 .row2{grid-template-columns:1fr 1fr}
 .row3{grid-template-columns:1fr 1fr 1fr}
@@ -372,6 +373,18 @@ button[hidden]{display:none!important}
   border:1px solid rgba(199,164,97,.45);border-radius:10px;padding:2px 7px;display:none;background:rgba(0,0,0,.25);font-weight:400}
 .trainbadge.on{display:block}
 .mist{margin:4px 0 14px}
+.sbox u.up{color:#8fd1a8}.sbox u.dn{color:#e39a85}
+.odds{display:flex;gap:12px;align-items:center;border:1px solid rgba(199,164,97,.18);border-radius:5px;padding:10px 12px;margin:-6px 0 12px}
+.odds b{flex:0 0 auto;font-size:24px;font-weight:400;color:var(--brass);font-variant-numeric:tabular-nums;min-width:64px}
+.odds.dn b{color:#e39a85}.odds.up b{color:#8fd1a8}
+.odds span{font-size:11.5px;line-height:1.5;color:var(--bone-dim)}
+.lgd{display:flex;gap:14px;font-size:10.5px;color:var(--bone-dim);margin:-8px 0 12px}
+.lgd i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:5px}
+.lgd i.dash{background:repeating-linear-gradient(90deg,rgba(199,164,97,.85) 0 4px,transparent 4px 7px)}
+.edgebox{display:flex;align-items:baseline;gap:12px;border:1px solid rgba(199,164,97,.35);background:rgba(199,164,97,.07);border-radius:6px;padding:11px 13px;margin-bottom:14px}
+.edgebox u{text-decoration:none;font-size:24px;color:var(--brass);font-variant-numeric:tabular-nums;flex:0 0 auto}
+.edgebox span{font-size:11.5px;line-height:1.5;color:var(--bone-dim)}
+.edgebox span b{display:block;font-size:11px;letter-spacing:.1em;font-weight:400;color:var(--bone);margin-bottom:1px}
 .mist .hrow{align-items:flex-start;gap:10px}
 .mist .hrow span{color:var(--bone)}
 .mist .hrow span small{display:block;font-size:11px;color:var(--bone-dim);margin-top:2px}
@@ -404,7 +417,7 @@ button[hidden]{display:none!important}
       <div class="pill ghost" id="dpill">—</div>
     </div>
     <svg class="inscription" id="ins" viewBox="0 0 320 44" role="img" aria-label="Blackjack pays 3 to 2">
-      <defs><path id="insA" d="M18 9 Q160 37 302 9"/><path id="insB" d="M26 25 Q160 51 294 25"/></defs>
+      <defs><path id="insA" d="M20 9 Q160 25 300 9"/><path id="insB" d="M20 25 Q160 41 300 25"/></defs>
       <text class="i1"><textPath href="#insA" xlink:href="#insA" startOffset="50%" text-anchor="middle" id="ins1">BLACKJACK PAYS 3 TO 2</textPath></text>
       <text class="i2"><textPath href="#insB" xlink:href="#insB" startOffset="50%" text-anchor="middle" id="ins2">DEALER MUST DRAW TO 16 AND STAND ON ALL 17s</textPath></text>
     </svg>
@@ -790,7 +803,7 @@ var START=1000;
 var startPick=1000;
 try{var sv=parseInt(localStorage.getItem("bj-start"),10);if(sv>=10&&sv<=1000000)startPick=sv;}catch(e){}
 var shoe=[],bank=START,bet=0,lastBet=0,hands=[],ai=0,dealer=[],phase="bet",busy=false;
-var history=[],roundOpen=START;
+var history=[],roundOpen=START,ROUND=null,DRES="";
 var RULE_DEFAULT={decks:6,csm:false,pen:.75,h17:false,peek:true,bj:1.5,dbl:"any",das:true,maxHands:4,rsa:false,hsa:false,surr:true,evenMoney:false};
 var PRESETS=[
   ["base","Základní",RULE_DEFAULT],
@@ -805,7 +818,20 @@ function presetOf(r){
   }
   return null;
 }
-var RULES={},PENDING=null,STRAT=null,DECKS,SHOETOTAL,RESHUFFLE;
+var RULES={},PENDING=null,STRAT=null,EDGE=0,DECKS,SHOETOTAL,RESHUFFLE;
+/* basic strategy and the house edge for a rule set (computed once per set) */
+var STRATC={};
+function strategyKey(r){return [r.decks,r.h17,r.peek,r.bj,r.dbl,r.das,r.maxHands,r.rsa,r.hsa,r.surr,r.evenMoney].join(",");}
+function strategyCached(r){return STRATC[strategyKey(r)]||null;}
+function strategyFor(r){
+  var key=[r.decks,r.h17,r.peek,r.bj,r.dbl,r.das,r.maxHands,r.rsa,r.hsa,r.surr,r.evenMoney].join(",");
+  if(!STRATC[key])STRATC[key]=computeStrategy({decks:r.decks,h17:r.h17,peek:r.peek,bj:r.bj,dbl:r.dbl,das:r.das,
+    maxHands:r.maxHands,rsa:r.rsa,hsa:r.hsa,surr:r.surr,evenMoney:r.evenMoney});
+  return STRATC[key];
+}
+function pctCz(x,d){return (x<0?"\u2212":"")+Math.abs(x).toFixed(d==null?2:d).replace(".",",")+" %";}
+/* spread of one round's result, in initial bets (simulated for common rule sets: 1,10\u20131,14) */
+var RSD=1.13;
 (function(){
   var k,saved=null;
   try{saved=JSON.parse(localStorage.getItem("bj-rules")||"null");}catch(e){}
@@ -1134,7 +1160,7 @@ function renderDealer(){
   var s=score(dealer);
   if(!dealer.length){pill($("dpill"),"");return;}
   if(phase==="play"||phase==="deal"){pill($("dpill"),"Showing "+val(dealer[0]));}
-  else{pill($("dpill"),totalText(dealer),s.t>21?"bust":(dealer.length===2&&s.t===21?"bj":""));}
+  else{pill($("dpill"),totalText(dealer),s.t>21?"bust":(phase==="done"&&DRES?DRES:(dealer.length===2&&s.t===21?"bj":"")));}
 }
 function renderHandLabels(){
   var boxes=$("phands").children,i;
@@ -1144,7 +1170,8 @@ function renderHandLabels(){
     var txt=h.surrendered?"Surrendered":totalText(h.cards);
     if(isBJ(h))txt="Blackjack";
     if(hands.length>1)txt=txt+" · "+h.bet;
-    pill(lab,txt,h.surrendered?"":(s.t>21?"bust":(isBJ(h)?"bj":"")));
+    var oc=phase==="done"?(h.res==="W"?"win":(h.res==="L"||h.surrendered?"lose":"")):"";
+    pill(lab,txt,s.t>21&&!h.surrendered?"bust":(isBJ(h)&&oc!=="lose"?"bj":oc));
     boxes[i].className="handbox"+(phase==="play"&&i===ai&&!h.done?" active":"")+(h.done&&phase==="play"?" settled":"");
   }
 }
@@ -1211,8 +1238,9 @@ async function deal(){
   if(PENDING){var nr=PENDING;PENDING=null;if(applyRules(nr)){shuffle();SFX.shuffle();}}
   payStop();STACKV=null;showResult(null);
   busy=true;phase="deal";lastBet=bet;roundOpen=bank;bank-=bet;
+  ROUND={bet:bet,edge:EDGE,mode:TRAIN};
   hands=[{cards:[],bet:bet,fromSplit:false,acted:false,done:false,surrendered:false}];
-  RIG=TRAIN===2?rigScenario():[];
+  RIG=TRAIN===2?rigScenario():[];DRES="";
   dealer=[];ai=0;
   $("phands").innerHTML="";$("dhand").innerHTML="";$("dhand").className="hand";
   say("");render();
@@ -1252,7 +1280,7 @@ async function afterDeal(){
 }
 async function takeEven(){
   var h=hands[0];
-  busy=true;phase="done";h.done=true;h.even=true;
+  busy=true;phase="done";h.done=true;h.even=true;h.res="W";
   PAYO={lost:0,won:h.bet,back:h.bet,from:bank};
   bank+=h.bet*2;ST.bj++;tally(h,"W",h.bet);
   render();await revealHole();busy=false;
@@ -1437,6 +1465,7 @@ function settle(){
   phase="done";
   var ds=score(dealer).t,dbj=(dealer.length===2&&ds===21),shortP=[],i,net=0,netLive=0,live=0,anyBJ=false,one="",label="";
   PAYO={lost:0,won:0,back:0,from:bank};
+  var dWins=0,dLoses=0;
   for(i=0;i<hands.length;i++){
     var h=hands[i],ps=score(h.cards).t,res,w=0;
     if(h.surrendered){continue;}
@@ -1450,6 +1479,8 @@ function settle(){
     else if(ps===ds){res="P";tally(h,"P",0);one="Oba máte "+ps+".";label="PUSH";}
     else{res="L";tally(h,"L",h.bet);one="Dealer má "+ds+" proti tvým "+ps+".";label="PROHRA";}
     var d=res==="L"?-h.bet:w;
+    h.res=res==="BJ"?"W":res;
+    if(res==="L"&&ps<=21)dWins++;else if(res==="W"||res==="BJ")dLoses++;
     net+=d;
     if(res!=="L")bank+=h.bet+w;
     /* chips of a busted hand are already gone */
@@ -1459,6 +1490,8 @@ function settle(){
     }
     shortP.push((i+1)+": "+(res==="BJ"?"BJ ":(ps>21?"bust ":""))+(res==="P"?"push":"<em>"+signed(d)+"</em>"));
   }
+  /* the dealer's total: gold if it beat a hand, red if it lost to every hand that stood (or busted) */
+  DRES=ds>21?"bust":(dWins?"win":(dLoses?"lose":""));
   if(live)setTimeout(anyBJ?SFX.bj:(netLive>0?SFX.win:(netLive<0?SFX.lose:SFX.push)),120);
   var played=hands.filter(function(x){return !x.surrendered;}).length;
   if(played)say(hands.length>1?
@@ -1476,7 +1509,8 @@ function finishRound(){
   if(CSM)recycle();
   var delta=bank-roundOpen,topped=false;
   if(bank<10){bank=START;topped=true;say(curMsg+" Žetony došly — dostáváš <em>"+fmt(START)+"</em> na dohrání.");}
-  history.push({n:history.length+1,bank:bank,delta:delta,topped:topped});
+  var rd=ROUND||{bet:0,edge:EDGE,mode:TRAIN};ROUND=null;
+  history.push({n:history.length+1,bank:bank,delta:delta,topped:topped,bet:rd.bet,edge:rd.edge,mode:rd.mode});
   if(cutOut&&!CSM)say(curMsg+" Vyšla řezací karta, před dalším kolem se míchá.");
   bet=0;
   showResult(RESULT);RESULT=null;
@@ -1575,17 +1609,27 @@ function computeStrategy(R){
     var e={S:stand(t),H:hit(sum,aces),D:dbl(sum,aces)};
     if(R.surr&&R.peek)e.R=-0.5/noBJ;
     if(cards[0]===cards[1]){
-      var c0=cards[0],ev1=0;
-      for(var q=1;q<=10;q++){
-        var s2=c0+q,a2=(c0===1||q===1)?1:0,t2=(a2&&s2+10<=21)?s2+10:s2,v;
-        if(c0===1&&!R.hsa)v=stand(t2);
-        else{
-          v=Math.max(stand(t2),t2>=21?-9:hit(s2,a2));
-          if(R.das&&c0!==1)v=Math.max(v,dbl(s2,a2));
+      var c0=cards[0];
+      /* one hand after a split; "lv" = how many more times it may be split again
+         when it catches another card of the same value */
+      var perHand=function(lv){
+        var ev1=0;
+        for(var q=1;q<=10;q++){
+          var s2=c0+q,a2=(c0===1||q===1)?1:0,t2=(a2&&s2+10<=21)?s2+10:s2,v;
+          if(c0===1&&!R.hsa)v=stand(t2);
+          else{
+            v=Math.max(stand(t2),t2>=21?-9:hit(s2,a2));
+            if(R.das&&c0!==1)v=Math.max(v,dbl(s2,a2));
+          }
+          if(q===c0&&lv>0&&(c0!==1||R.rsa))v=Math.max(v,2*perHand(lv-1));
+          ev1+=pr[q]*v;
         }
-        ev1+=pr[q]*v;
-      }
-      e.P=2*ev1;
+        return ev1;
+      };
+      /* up to 4 hands: each of the two hands may split once more;
+         up to 3: only one more split between them, so about half the time */
+      var mh=R.maxHands||2;
+      e.P=2*(mh>=4?perHand(1):(mh===3?(perHand(0)+perHand(1))/2:perHand(0)));
     }
     /* back to unconditional EV: with no peek a dealer blackjack takes
        the original bet, plus doubles and splits ("lose all") */
@@ -1601,12 +1645,35 @@ function computeStrategy(R){
   function addInto(acc,e,w){for(var a in e)acc[a]=(acc[a]||0)+w*e[a];}
 
   var full=fullShoe(),ups=[2,3,4,5,6,7,8,9,10,1],out={hard:{},soft:{},pair:{},ev:{hard:{},soft:{},pair:{}}};
+  /* ---- the player's expected return over all deals, best first-decision play ---- */
+  var N0=52*decks,ER=0;
+  function firstBest(e,two,up,isPair){
+    var b=Math.max(e.S,e.H);
+    var tot=two[0]+two[1],soft=two[0]===1||two[1]===1;
+    if(soft&&tot+10<=21)tot+=10;
+    var dOK=R.dbl==="any"||(!soft&&(R.dbl==="9-11"?tot>=9&&tot<=11:tot>=10&&tot<=11));
+    if(dOK)b=Math.max(b,e.D);
+    if(isPair&&R.maxHands>=2&&e.P!=null)b=Math.max(b,e.P);
+    if(e.R!=null&&R.surr&&(R.peek||up!==1))b=Math.max(b,e.R);
+    return b;
+  }
+  /* weight w: probability of this ordered deal of two player cards given the upcard */
+  function addDeal(c,up,cards,w,e){
+    var n=0,r;for(r=1;r<=10;r++)n+=c[r];
+    var v=firstBest(e,cards,up,cards[0]===cards[1]);
+    if(R.peek&&(up===1||up===10)){
+      var q=(up===1?c[10]:c[1])/n;          /* dealer blackjack, found by the peek */
+      v=q*-1+(1-q)*v;
+    }
+    ER+=w*v;
+  }
   function cell(table,key,ui,ranking,e){
     (out[table][key]=out[table][key]||[])[ui]=ranking;
     (out.ev[table][key]=out.ev[table][key]||[])[ui]=e;
   }
   ups.forEach(function(up,ui){
     var base=full.slice();base[up]--;
+    var pUp=full[up]/N0;
     /* hard totals 5..20, averaged over their non-pair two-card make-ups */
     for(var T=5;T<=20;T++){
       var acc={},W=0;
@@ -1614,7 +1681,8 @@ function computeStrategy(R){
         if(a+b!==T)continue;
         var c=base.slice(),w=c[a]*c[b];c[a]--;c[b]--;
         if(c[a]<0||c[b]<0||!w)continue;
-        addInto(acc,evals(c,up,[a,b]),w);W+=w;
+        var eab=evals(c,up,[a,b]);addInto(acc,eab,w);W+=w;
+        addDeal(c,up,[a,b],pUp*2*base[a]*base[b]/((N0-1)*(N0-2)),eab);
       }
       if(!W)continue;
       for(var k in acc)acc[k]/=W;
@@ -1623,12 +1691,23 @@ function computeStrategy(R){
     for(var x=2;x<=9;x++){
       var c2=base.slice();c2[1]--;c2[x]--;
       var e2=evals(c2,up,[1,x]);cell("soft",11+x,ui,rank(e2),e2);
+      addDeal(c2,up,[1,x],pUp*2*base[1]*base[x]/((N0-1)*(N0-2)),e2);
     }
     for(var r=1;r<=10;r++){
       var c3=base.slice();c3[r]-=2;
       var e3=evals(c3,up,[r,r]);cell("pair",r,ui,rank(e3),e3);
+      addDeal(c3,up,[r,r],pUp*base[r]*(base[r]-1)/((N0-1)*(N0-2)),e3);
+    }
+    /* blackjack: paid unless the dealer also has one; even money takes 1 : 1 for sure */
+    {
+      var cb=base.slice();cb[1]--;cb[10]--;
+      var nb=N0-3,q=up===1?cb[10]/nb:(up===10?cb[1]/nb:0);
+      var vb=(1-q)*R.bj;
+      if(R.evenMoney&&up===1)vb=Math.max(vb,1);
+      ER+=pUp*2*base[1]*base[10]/((N0-1)*(N0-2))*vb;
     }
   });
+  out.edge=-ER;
   return out;
 }
 
@@ -1642,7 +1721,7 @@ function applyRules(next){
   }
   DECKS=RULES.decks;SHOETOTAL=DECKS*52;CSM=RULES.csm;
   RESHUFFLE=Math.max(15,Math.round(SHOETOTAL*(1-RULES.pen)));
-  STRAT=computeStrategy({decks:DECKS,h17:RULES.h17,peek:RULES.peek,das:RULES.das,surr:RULES.surr,hsa:RULES.hsa});
+  STRAT=strategyFor(RULES);EDGE=STRAT.edge;
   var i1=$("ins1"),i2=$("ins2");
   if(i1){
     i1.textContent="BLACKJACK PAYS "+(RULES.bj===1.5?"3 TO 2":"6 TO 5");
@@ -1803,25 +1882,33 @@ function renderHistory(){
   }
   /* the running win/loss over the whole game: a top-up adds chips, not winnings,
      so the line carries on instead of jumping back */
-  var pts=[0],i,net=0,wins=0;
+  var pts=[0],exp=[0],i,net=0,wins=0,ex=0;
   for(i=0;i<history.length;i++){
-    net+=history[i].delta;
-    history[i].cum=net;
+    var hi_=history[i];
+    net+=hi_.delta;
+    hi_.cum=net;
     pts.push(net);
-    if(history[i].delta>0)wins++;
+    if(hi_.delta>0)wins++;
+    /* the expected path: what the rules give over the random rounds (Train + deals are hand-picked, so they count as played) */
+    ex+=hi_.mode===2||hi_.bet==null?hi_.delta:-hi_.edge*hi_.bet;
+    exp.push(ex);
   }
-  var lo=Math.min.apply(null,pts),hi=Math.max.apply(null,pts);
+  var EX=expectation();
+  var lo=Math.min(Math.min.apply(null,pts),Math.min.apply(null,exp)),hi=Math.max(Math.max.apply(null,pts),Math.max.apply(null,exp));
   if(hi===lo){hi=lo+10;lo=lo-10;}
-  var W=300,H=110,pad=6,poly="",j;
+  var W=300,H=110,pad=6,poly="",epoly="",j;
   for(j=0;j<pts.length;j++){
     var x=pad+(W-2*pad)*(pts.length===1?0:j/(pts.length-1));
-    var y=pad+(H-2*pad)*(1-(pts[j]-lo)/(hi-lo));
+    var y=pad+(H-2*pad)*(1-(pts[j]-lo)/(hi-lo)),ye=pad+(H-2*pad)*(1-(exp[j]-lo)/(hi-lo));
     poly+=(j?" ":"")+x.toFixed(1)+","+y.toFixed(1);
+    epoly+=(j?" ":"")+x.toFixed(1)+","+ye.toFixed(1);
   }
   var zy=pad+(H-2*pad)*(1-(0-lo)/(hi-lo));
   var svg='<svg class="spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';
   if(0>=lo&&0<=hi)svg+='<line x1="'+pad+'" y1="'+zy.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+zy.toFixed(1)+'" stroke="rgba(233,224,204,.22)" stroke-width="1" stroke-dasharray="3 3"/>';
+  if(EX.n)svg+='<polyline points="'+epoly+'" fill="none" stroke="rgba(199,164,97,.8)" stroke-width="1.4" stroke-dasharray="5 4" stroke-linejoin="round"/>';
   svg+='<polyline points="'+poly+'" fill="none" stroke="'+(net>=0?"#7fc49a":"#d08a76")+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  if(EX.n)svg+='<div class="lgd"><span><i style="background:'+(net>=0?"#7fc49a":"#d08a76")+'"></i>skutečnost</span><span><i class="dash"></i>očekávání podle pravidel</span></div>';
   var tops=history.filter(function(x){return x.topped;}).length;
   sub.innerHTML=history.length+" kol · bilance <em style=\"font-style:normal;color:"+(net>=0?"#7fc49a":"#d08a76")+'">'+signed(net)+"</em> · vyhraných kol "+wins+
     (tops?" · doplněno "+tops+"\u00d7":"")+" · žetony teď "+fmt(bank);
@@ -1832,10 +1919,53 @@ function renderHistory(){
       '<b class="'+cls+'">'+(e.delta>0?"+":(e.delta<0?"\u2212":"\u00b1"))+Math.abs(e.delta)+
       '<span style="margin-left:10px">'+signed(e.cum)+'</span></b></div>';
   }
-  body.innerHTML=statsHtml()+'<h3 class="sec">Celková výhra / prohra</h3>'+svg+
+  body.innerHTML=statsHtml()+expectHtml(EX)+'<h3 class="sec">Celková výhra / prohra</h3>'+svg+
     '<div class="hrow"><span>Kolo</span><b><span>výsledek</span><span style="margin-left:10px">celkem</span></b></div>'+rows;
 }
 function pct(a,b){return b?Math.round(100*a/b)+" %":"\u2014";}
+/* ---- what the rules lead you to expect, and how unusual your result is ----
+   Every round outside Train + (whose deals are hand-picked) counts with the
+   house edge of the rules it was played under. The sum of many rounds is close
+   to normal, with a spread of about 1.13 initial bets per round. */
+function normCdf(z){
+  var t=1/(1+.2316419*Math.abs(z)),d=.3989422804*Math.exp(-z*z/2);
+  var p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
+  return z>0?1-p:p;
+}
+function expectation(){
+  var o={n:0,wag:0,exp:0,act:0,v:0,skipped:0},i;
+  for(i=0;i<history.length;i++){
+    var e=history[i];
+    if(e.bet==null||!e.bet)continue;
+    if(e.mode===2){o.skipped++;continue;}
+    o.n++;o.wag+=e.bet;o.exp+=-e.edge*e.bet;o.act+=e.delta;o.v+=e.bet*e.bet;
+  }
+  o.sd=RSD*Math.sqrt(o.v);
+  o.z=o.sd?(o.act-o.exp)/o.sd:0;
+  o.edge=o.wag?-o.exp/o.wag:EDGE;
+  return o;
+}
+function expectHtml(o){
+  if(!o.n)return o.skipped?'<h3 class="sec">Očekávání podle pravidel</h3><p class="note">V Train + chodí vybrané situace místo náhodných karet, takže se s očekáváním neporovnávají. Odehraj kola v běžném režimu nebo v Train.</p>':"";
+  var r=Math.round,lo=r(o.exp-o.sd),hi=r(o.exp+o.sd);
+  var out='<h3 class="sec">Očekávání podle pravidel</h3><div class="sgrid">'+
+    '<div class="sbox"><b>OČEKÁVANÝ VÝSLEDEK</b><u>'+signed(r(o.exp))+'</u><span>house edge '+pctCz(o.edge*100)+' z '+fmt(o.wag)+' vsazených za '+o.n+' kol</span></div>'+
+    '<div class="sbox"><b>TVŮJ VÝSLEDEK</b><u class="'+(o.act>=o.exp?"up":"dn")+'">'+signed(o.act)+'</u><span>'+
+      (o.n>1?'běžné rozpětí (\u00b11\u00a0\u03c3) <span style="white-space:nowrap;display:inline;margin:0">'+signed(lo)+' až '+signed(hi)+'</span>':'po prvním kole')+'</span></div></div>';
+  if(o.n<20){
+    out+='<p class="note">Pravděpodobnost výsledku ukážu od 20 odehraných kol, předtím je to jen hod mincí.</p>';
+  }else{
+    var worse=o.act<o.exp,p=worse?normCdf(o.z):1-normCdf(o.z),pp=p*100;
+    var ps=pp<1?pctCz(pp,1):(pp<10?pctCz(pp,1):pctCz(pp,0));
+    var N=Math.max(2,Math.round(1/p));
+    out+='<div class="odds'+(worse?' dn':' up')+'"><b>'+ps+'</b><span>'+
+      (worse?'Takhle špatný nebo horší':'Takhle dobrý nebo lepší')+' výsledek by měl '+(N<=2?'zhruba každý druhý hráč':'zhruba 1 hráč z '+fmt(N))+
+      ', který odehraje stejná kola přesně podle basic strategy. '+
+      'Tvůj výsledek je '+(Math.abs(o.z)<.05?'přesně na očekávání':Math.abs(o.z).toFixed(1).replace(".",",")+' \u03c3 '+(worse?'pod':'nad')+' očekáváním')+'.</span></div>';
+  }
+  if(o.skipped)out+='<p class="note">'+o.skipped+' kol v Train + se nepočítá, karty tam nejsou náhodné.</p>';
+  return out;
+}
 function signed(n){return (n>0?"+":(n<0?"\u2212":"\u00b1"))+fmt(Math.abs(n));}
 function statsHtml(){
   var S=ST,dec=S.won+S.lost+S.push+S.sur;
@@ -2033,7 +2163,7 @@ function rigScenario(){
   }
   return out;
 }
-function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u2009");}
+function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u00a0");}
 function startLabel(){
   var bs=document.querySelectorAll("[data-start]"),i;
   for(i=0;i<bs.length;i++)bs[i].classList.toggle("lit",+bs[i].getAttribute("data-start")===startPick);
@@ -2090,6 +2220,7 @@ var OPTS=[
 ];
 function renderSettings(){
   var o="",i,j,cur=presetOf(DRAFT);
+  o+='<div class="edgebox" id="edgeBox">'+edgeBoxHtml(strategyCached(DRAFT))+'</div>';
   o+='<div class="opt"><b>Sada pravidel</b><div class="seg">';
   for(i=0;i<PRESETS.length;i++)o+='<button data-preset="'+i+'"'+(cur===PRESETS[i]?' class="on"':'')+'>'+PRESETS[i][1]+'</button>';
   o+='<button disabled'+(cur?'':' class="on"')+' style="opacity:'+(cur?'.35':'1')+'">Vlastní</button></div>'+
@@ -2104,6 +2235,18 @@ function renderSettings(){
     o+='</div>'+(op[4]&&(dis||key==="peek"||key==="surr"||key==="evenMoney")?'<small>'+op[4]+'</small>':'')+'</div>';
   }
   $("setBody").innerHTML=o;
+  /* a new rule set takes a moment on a phone: show the panel first, then the number */
+  if(!strategyCached(DRAFT)){
+    var want=DRAFT;
+    setTimeout(function(){var s=strategyFor(want);if(want===DRAFT&&$("edgeBox"))$("edgeBox").innerHTML=edgeBoxHtml(s);},30);
+  }
+}
+function edgeBoxHtml(s){
+  if(!s)return '<u>\u2026</u><span><b>HOUSE EDGE S TĚMITO PRAVIDLY</b>Počítám\u2026</span>';
+  var he=s.edge*100;
+  return '<u>'+pctCz(he)+'</u><span><b>HOUSE EDGE S TĚMITO PRAVIDLY</b>'+
+    (he>=0?'Hraješ-li přesně podle basic strategy, prohraješ průměrně '+pctCz(he).replace(" %","")+' Kč ze 100 Kč sázky.':
+      'Pro hráče výhodná pravidla: podle basic strategy vyděláš průměrně '+pctCz(-he).replace(" %","")+' Kč na 100 Kč sázky.')+'</span>';
 }
 function openSettings(){
   DRAFT={};var base=PENDING||RULES,k;for(k in RULE_DEFAULT)DRAFT[k]=base[k];
