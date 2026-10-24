@@ -1,3 +1,12 @@
+<!doctype html>
+<html lang="cs">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b2419">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
 <title>Blackjack Salon</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,13 +49,11 @@ body{
   box-shadow:inset 0 0 0 6px rgba(199,164,97,.07);
   pointer-events:none;
 }
-.inscription{
-  text-align:center;font-family:'Cormorant Garamond',Georgia,serif;
-  font-size:14px;letter-spacing:.09em;color:rgba(199,164,97,.78);
-  line-height:1.6;margin:0;position:relative;
-}
-.table.tight .inscription{display:none}
-.inscription span{display:block;font-size:12px;color:rgba(233,224,204,.45);letter-spacing:.14em}
+/* printed on the felt, arched like a real blackjack layout */
+.inscription{display:block;width:min(100%,340px);height:auto;margin:0 auto;position:relative;overflow:visible;flex:0 0 auto}
+.table.tight .inscription{width:min(100%,270px)}
+.inscription .i1{font-family:'Cormorant Garamond',Georgia,serif;font-size:15px;font-weight:600;letter-spacing:.14em;fill:rgba(199,164,97,.8)}
+.inscription .i2{font-family:'Jost',sans-serif;font-size:7.4px;font-weight:400;letter-spacing:.17em;fill:rgba(233,224,204,.46)}
 
 .shoe{
   padding:0;cursor:pointer;
@@ -337,10 +344,45 @@ h3.sec{font-size:12px;letter-spacing:.1em;color:var(--bone-dim);font-weight:400;
 .links a{color:var(--brass);text-decoration:none;border-bottom:1px solid rgba(199,164,97,.35)}
 .links span{display:block;font-size:11px;color:var(--bone-dim);margin-top:3px;line-height:1.5}
 
+.helpbtn.ico{display:flex;align-items:center;justify-content:center;padding:0}
+.helpbtn.ico svg{display:block}
+button[hidden]{display:none!important}
+/* the result, between your chips and your bet */
+.meters{position:relative}
+.meter.mid{position:absolute;left:50%;bottom:0;transform:translateX(-50%);text-align:center;pointer-events:none;
+  opacity:0;white-space:nowrap;transition:opacity .18s linear}
+.meter.mid.on{opacity:1;animation:resin .46s var(--ease) both}
+@keyframes resin{0%{opacity:0;transform:translateX(-50%) translateY(4px) scale(.8)}60%{opacity:1;transform:translateX(-50%) scale(1.07)}100%{transform:translateX(-50%) scale(1)}}
+.meter.mid b{letter-spacing:.2em}
+.meter.mid.win b,.meter.mid.win u,.meter.mid.bj b,.meter.mid.bj u{color:#8fd1a8}
+.meter.mid.bj u{text-shadow:0 0 14px rgba(143,209,168,.35)}
+.meter.mid.lose b,.meter.mid.lose u{color:#e39a85}
+.meter.mid.push u{color:var(--bone)}
+.ghostchip.pay{width:26px;height:26px;font-size:9px;border-width:2px;cursor:default;transition:none}
+/* the plastic cut card, put aside once it comes out of the shoe */
+.cutcard{position:absolute;z-index:3;right:calc(22px + var(--sr));top:54px;width:calc(var(--card-w)*.6);height:calc(var(--card-h)*.6);
+  border-radius:4px;background:linear-gradient(160deg,#f6d84a,#d8a81c);border:1px solid rgba(70,45,0,.35);
+  box-shadow:0 4px 9px rgba(0,0,0,.42);transform:rotate(-9deg);opacity:0;pointer-events:none;
+  transition:opacity .2s linear}
+.cutcard::after{content:"";position:absolute;inset:4px;border:1px solid rgba(90,60,0,.25);border-radius:2px}
+.cutcard.on{opacity:1}
+.shoe.shuffling{animation:shufwig .34s ease-in-out 4}
+@keyframes shufwig{0%,100%{transform:none}30%{transform:translateX(-2px) rotate(-3deg)}70%{transform:translateX(2px) rotate(3deg)}}
+.trainbadge{position:absolute;top:19px;right:calc(70px + var(--sr));z-index:5;font-size:10px;letter-spacing:.16em;color:var(--brass);
+  border:1px solid rgba(199,164,97,.45);border-radius:10px;padding:2px 7px;display:none;background:rgba(0,0,0,.25);font-weight:400}
+.trainbadge.on{display:block}
+.mist{margin:4px 0 14px}
+.mist .hrow{align-items:flex-start;gap:10px}
+.mist .hrow span{color:var(--bone)}
+.mist .hrow span small{display:block;font-size:11px;color:var(--bone-dim);margin-top:2px}
+.mist .hrow b{color:#e39a85;flex:0 0 auto}
+.mist em{font-style:normal;color:var(--brass)}
+
 @media (prefers-reduced-motion:reduce){
   .flying,.settling,.card-inner,.chip,.card,.actions,.msg{transition:none!important}
   .actions.enter button.act,.pill.pop,.handbox.fresh{animation:none!important}
   .panel,.sheet,.modal,.toast{transition:none!important}
+  .meter.mid.on,.shoe.shuffling{animation:none!important}
 }
 
 </style>
@@ -348,18 +390,24 @@ h3.sec{font-size:12px;letter-spacing:.1em;color:var(--bone-dim);font-weight:400;
 <div class="app">
   <section class="table" id="tbl">
     <button class="helpbtn" id="helpBtn" aria-label="Nápověda základní strategie">?</button>
-    <button class="helpbtn snd" id="sndBtn" aria-label="Zvuky">&#9834;</button>
-    <button class="helpbtn snd mus" id="musBtn" aria-label="Hudba">&#9835;</button>
-    <button class="helpbtn snd hap" id="hapBtn" aria-label="Vibrace">&#8776;</button>
-    <button class="helpbtn snd csm" id="setBtn" aria-label="Pravidla hry" title="Pravidla hry">&#9881;</button>
-    <button class="helpbtn snd statsbtn" id="statBtn" aria-label="Statistiky a vývoj žetonů" title="Statistiky a vývoj žetonů"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><polyline points="1.5,12 5.5,7.5 8.5,9.5 14.5,3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="helpbtn snd ico" id="sndBtn" aria-label="Zvuky"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2h2.4l3.2-2.7v9L4.9 9.8H2.5z"/><path d="M10.6 5.8a3.1 3.1 0 0 1 0 4.4"/><path d="M12.4 4a5.6 5.6 0 0 1 0 8"/></svg></button>
+    <button class="helpbtn snd mus ico" id="musBtn" aria-label="Hudba"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.2 11.6V3.6l6.6-1.4v8"/><ellipse cx="4.6" cy="11.8" rx="1.7" ry="1.4"/><ellipse cx="11.2" cy="10.4" rx="1.7" ry="1.4"/></svg></button>
+    <button class="helpbtn snd hap ico" id="hapBtn" aria-label="Vibrace"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5.4" y="2.4" width="5.2" height="11.2" rx="1.2"/><path d="M3.2 5.6v4.8M12.8 5.6v4.8M1.3 7v2M14.7 7v2"/></svg></button>
+    <button class="helpbtn snd csm ico" id="setBtn" aria-label="Pravidla hry" title="Pravidla hry"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12.68 6.24 L14.47 6.69 L14.47 9.31 L12.68 9.76 L12.55 10.06 L13.50 11.65 L11.65 13.50 L10.06 12.55 L9.76 12.68 L9.31 14.47 L6.69 14.47 L6.24 12.68 L5.94 12.55 L4.35 13.50 L2.50 11.65 L3.45 10.06 L3.32 9.76 L1.53 9.31 L1.53 6.69 L3.32 6.24 L3.45 5.94 L2.50 4.35 L4.35 2.50 L5.94 3.45 L6.24 3.32 L6.69 1.53 L9.31 1.53 L9.76 3.32 L10.06 3.45 L11.65 2.50 L13.50 4.35 L12.55 5.94Z"/><circle cx="8" cy="8" r="2.1"/></svg></button>
+    <button class="helpbtn snd statsbtn ico" id="statBtn" aria-label="Statistiky a vývoj žetonů" title="Statistiky a vývoj žetonů"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,12 5.5,7.5 8.5,9.5 14.5,3"/></svg></button>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <button class="shoe" id="shoe" aria-label="Stav shoe a running count" title="Shoe"></button>
+    <div class="cutcard" id="cutcard" aria-hidden="true"></div>
+    <div class="trainbadge" id="trainBadge"></div>
     <div class="seat dealer">
       <div class="hand" id="dhand"></div>
       <div class="pill ghost" id="dpill">—</div>
     </div>
-    <p class="inscription">Blackjack pays 3 to 2<span>dealer must draw to 16 and stand on all 17s</span></p>
+    <svg class="inscription" id="ins" viewBox="0 0 320 44" role="img" aria-label="Blackjack pays 3 to 2">
+      <defs><path id="insA" d="M18 9 Q160 37 302 9"/><path id="insB" d="M26 25 Q160 51 294 25"/></defs>
+      <text class="i1"><textPath href="#insA" xlink:href="#insA" startOffset="50%" text-anchor="middle" id="ins1">BLACKJACK PAYS 3 TO 2</textPath></text>
+      <text class="i2"><textPath href="#insB" xlink:href="#insB" startOffset="50%" text-anchor="middle" id="ins2">DEALER MUST DRAW TO 16 AND STAND ON ALL 17s</textPath></text>
+    </svg>
     <div class="seat player">
       <div class="hands" id="phands"></div>
     </div>
@@ -369,6 +417,7 @@ h3.sec{font-size:12px;letter-spacing:.1em;color:var(--bone-dim);font-weight:400;
   <section class="console">
     <div class="meters">
       <div class="meter" id="bankBtn"><b>ŽETONY</b><u id="bank">1000</u></div>
+      <div class="meter mid" id="result" aria-live="polite"><b></b><u></u></div>
       <div class="meter right"><b>SÁZKA</b><u id="bet">0</u></div>
     </div>
     <p class="msg" id="msg">Vsaď žetony a nech rozdat.</p>
@@ -400,6 +449,7 @@ h3.sec{font-size:12px;letter-spacing:.1em;color:var(--bone-dim);font-weight:400;
       </div>
       <div class="panel" data-p="done">
         <button class="act key" data-act="again">Další kolo</button>
+        <button class="act key" data-act="reshuffle" hidden>Zamíchat novou shoe</button>
       </div>
       <div class="panel" data-p="even">
         <div class="row2">
@@ -415,7 +465,7 @@ h3.sec{font-size:12px;letter-spacing:.1em;color:var(--bone-dim);font-weight:400;
   <button class="close" data-close="mHelp" aria-label="Zavřít">&times;</button>
   <h2>Basic strategy</h2>
   <div id="rulesBox"></div>
-  <div class="mrow"><button class="act quiet" id="trainToggle">Train mode: vypnuto</button></div>
+  <div class="opt"><b>Train mode</b><div class="seg" id="trainSeg"><button data-train="0">Vypnuto</button><button data-train="1">Train</button><button data-train="2">Train +</button></div><small id="trainNote"></small></div>
   <div id="trainStats"></div>
   <div id="adviceBox"></div>
   <div id="bsTables"></div>
@@ -487,7 +537,35 @@ var REDUCED=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduc
 var AC=null,MASTER=null,MUSB=null,LIM=null;
 var SFXG=.9,MUSG=.55;
 var sfxOn=true,musOn=true,hapOn=true;
-function buzz(pat){if(!hapOn)return;try{if(navigator.vibrate)navigator.vibrate(pat);}catch(e){}}
+/* vibration: the Vibration API where it exists (Android); on iPhone, Safari has
+   no such API, but toggling a hidden switch control gives a short system tick (iOS 18+) */
+var IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+var HAPI=null;
+function iosTick(){
+  try{
+    if(!HAPI){
+      HAPI=document.createElement("label");HAPI.className="hapi";HAPI.setAttribute("aria-hidden","true");
+      HAPI.style.cssText="position:fixed;left:-60px;top:0;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none";
+      var sw=document.createElement("input");sw.type="checkbox";sw.setAttribute("switch","");sw.tabIndex=-1;
+      HAPI.appendChild(sw);document.body.appendChild(HAPI);
+    }
+    HAPI.click();
+  }catch(e){}
+}
+function canBuzz(){return !!navigator.vibrate||IOS;}
+function buzz(pat){
+  if(!hapOn)return;
+  try{
+    if(navigator.vibrate){navigator.vibrate(pat);return;}
+    if(!IOS)return;
+    var p=typeof pat==="number"?[0,pat]:pat,t=0,i;
+    /* one tick per "on" segment of the pattern */
+    for(i=0;i<p.length;i++){
+      if(i%2===1){if(t===0)iosTick();else setTimeout(iosTick,t);}
+      t+=p[i];
+    }
+  }catch(e){}
+}
 function rnd(a,b){return a+Math.random()*(b-a);}
 function b64buf(txt){
   var bin=atob(txt.replace(/\s+/g,"")),n=bin.length,u8=new Uint8Array(n),i;
@@ -527,7 +605,7 @@ function audio(){
     MUSB=AC.createGain();MUSB.gain.value=0;MUSB.connect(AC.destination);
     loadSfx();
   }
-  if(AC.state==="suspended"&&AC.resume)AC.resume();
+  if((AC.state==="suspended"||AC.state==="interrupted")&&AC.resume){try{AC.resume();}catch(e){}}
   return AC;
 }
 
@@ -548,11 +626,12 @@ function play(group,o){
   o=o||{};
   if(!sfxOn||!AC)return;
   var list=BUF[group];if(!list||!list.length)return;
-  var b=(o.name&&BUFN[o.name])||list[Math.floor(Math.random()*list.length)];
+  var b=o.name?BUFN[o.name]:list[0];if(!b)return;
   var src=AC.createBufferSource();src.buffer=b;
   /* explicit pitch steps (the win cascade) vary only slightly; everything else as before */
-  if(src.playbackRate)src.playbackRate.value=(o.rate||1)*(o.vary===false?1:(o.rate?rnd(.97,1.03):rnd(.95,1.05)));
-  var g=AC.createGain();g.gain.value=(o.g==null?1:o.g)*(o.vary===false?1:(o.rate?rnd(.9,1):rnd(.88,1)));
+  /* every event always uses the same take at the same pitch and level */
+  if(src.playbackRate)src.playbackRate.value=o.rate||1;
+  var g=AC.createGain();g.gain.value=(o.g==null?1:o.g);
   var head=src;
   if(o.lp){var f=AC.createBiquadFilter();f.type="lowpass";f.frequency.value=o.lp;f.Q.value=.4;src.connect(f);head=f;}
   head.connect(g);g.connect(MASTER);
@@ -576,39 +655,41 @@ function playCard(group,o){
 }
 var SFX={
   /* "at" lines the hit in the sample (60 ms in) up with the card landing */
-  deal:function(at){buzz(8);playCard("slide",{g:2.3,at:at||0});},
-  flip:function(){playCard("place",{g:1.7});},
-  chip:function(){buzz(6);play("lay",{g:2.6});},
+  deal:function(at){buzz(8);playCard("slide",{g:1.85,at:at||0,name:"card-slide-3"});},
+  flip:function(){playCard("place",{g:1.15,name:"card-place-1"});},
+  chip:function(){buzz(6);play("lay",{g:2.6,name:"chip-lay-1"});},
   tick:function(){},
-  bust:function(){buzz(150);play("shove",{g:1.6});},
+  /* the cut card coming out: one soft plastic tap */
+  cut:function(){buzz(20);play("place",{g:1.1,name:"card-place-4",lp:3200});},
   /* loss: the dealer rakes the chips away, low and muffled, falling */
   /* one fixed take, so a loss always sounds the same */
-  lose:function(){buzz([0,110]);play("handle",{g:2.2,name:"chips-handle-2",vary:false});play("collide",{g:1,at:.14,name:"chips-collide-2",vary:false});},
-  push:function(){buzz([0,18,50,18]);play("lay",{g:2.2});play("lay",{g:1.6,at:.1});},
+  lose:function(){buzz([0,110]);play("handle",{g:2.2,name:"chips-handle-2"});play("collide",{g:1,at:.14,name:"chips-collide-2"});},
+  push:function(){buzz([0,18,50,18]);play("lay",{g:2.2,name:"chip-lay-1"});play("lay",{g:1.6,at:.1,name:"chip-lay-1"});},
   /* win: the payout is stacked toward you, each chip a little brighter, ending on a clean clack */
   win:function(){
     buzz([0,26,42,34]);
-    play("stack",{g:1.25,rate:1});
-    play("stack",{g:1.15,rate:1.1,at:.1});
-    play("stack",{g:1.05,rate:1.2,at:.2});
-    play("stack",{g:1.1,rate:1.32,at:.31});
+    var n="chips-stack-1";
+    play("stack",{g:1.1,rate:1,name:n});
+    play("stack",{g:1,rate:1.1,at:.1,name:n});
+    play("stack",{g:.92,rate:1.2,at:.2,name:n});
+    play("stack",{g:.96,rate:1.32,at:.31,name:n});
   },
   /* blackjack: a flourish of the cards, then a longer 3:2 payout climbing the same way */
   bj:function(){
     buzz([0,24,36,24,36,70]);
-    play("fan",{g:.6,vary:false});
-    var r=[1,1.07,1.14,1.22,1.3],i;
-    for(i=0;i<r.length;i++)play("stack",{g:.9-i*.04,rate:r[i],at:.42+i*.085});
-    play("stack",{g:.85,rate:1.42,at:.42+r.length*.085+.04});
+    play("fan",{g:.6,name:"card-fan-1"});
+    var r=[1,1.07,1.14,1.22,1.3],i,n="chips-stack-1";
+    for(i=0;i<r.length;i++)play("stack",{g:.8-i*.035,rate:r[i],at:.42+i*.085,name:n});
+    play("stack",{g:.75,rate:1.42,at:.42+r.length*.085+.04,name:n});
   },
-  give:function(){buzz([0,40,70,40]);play("handle",{g:2.4});},
-  shuffle:function(){play("shuffle",{g:1.6,vary:false});}
+  give:function(){buzz([0,40,70,40]);play("handle",{g:2.4,name:"chips-handle-6"});},
+  shuffle:function(){play("shuffle",{g:1.6,name:"card-shuffle"});}
 };
 
 /* ---- background music: decoded one song at a time straight into Web Audio.
    No <audio> element and no URL, so strict page policies can't silence it,
    and only the current and next song are ever held in memory. ---- */
-var MUS={playing:false,q:[],buf:{},gen:0,resumeI:0,resumeOff:0,stopT:null};
+var MUS={playing:false,q:[],buf:{},gen:0,stopT:null,bag:[],last:-1};
 var SONG_FILES=10;
 function songCount(){return document.querySelectorAll("script.bgm").length||SONG_FILES;}
 function getSong(i,cb){
@@ -619,6 +700,17 @@ function getSong(i,cb){
   if(!window.fetch)return no();
   fetch("music/song"+i+".mp3").then(function(r){if(!r.ok)throw new Error(r.status);return r.arrayBuffer();})
     .then(function(ab){decode(ab,ok,no);})["catch"](no);
+}
+/* random order: every song once per round of the playlist, never the same one twice in a row */
+function nextSong(){
+  var N=songCount(),i;
+  if(!MUS.bag.length){
+    for(i=0;i<N;i++)MUS.bag.push(i);
+    for(i=N-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=MUS.bag[i];MUS.bag[i]=MUS.bag[j];MUS.bag[j]=t;}
+    if(N>1&&MUS.bag[0]===MUS.last){MUS.bag.push(MUS.bag.shift());}
+  }
+  MUS.last=MUS.bag.shift();
+  return MUS.last;
 }
 function queueSong(i,at,off,gen){
   var N=songCount();if(!N)return;
@@ -634,9 +726,9 @@ function queueSong(i,at,off,gen){
       var k=MUS.q.indexOf(e);if(k>=0)MUS.q.splice(k,1);
       if(!MUS.q.some(function(x){return x.i===i;}))delete MUS.buf[i];
       var last=MUS.q[MUS.q.length-1];
-      if(last&&MUS.q.length<2)queueSong((last.i+1)%N,last.end,0,gen);
+      if(last&&MUS.q.length<2)queueSong(nextSong(),last.end,0,gen);
     };
-    if(MUS.q.length<2)queueSong((i+1)%N,e.end,0,gen);
+    if(MUS.q.length<2)queueSong(nextSong(),e.end,0,gen);
   });
 }
 function rampMus(v){
@@ -649,6 +741,7 @@ function stopQueue(){
   MUS.q.forEach(function(e){try{e.src.onended=null;e.src.stop();}catch(x){}});
   MUS.q=[];
 }
+/* music always (re)starts from the top of a random song */
 function music(on){
   musOn=on;
   if(!audio())return;
@@ -658,17 +751,41 @@ function music(on){
     MUS.playing=true;MUS.gen++;
     stopQueue();
     rampMus(MUSG);
-    queueSong(MUS.resumeI,AC.currentTime+.05,MUS.resumeOff,MUS.gen);
+    queueSong(nextSong(),AC.currentTime+.05,0,MUS.gen);
   }else{
     if(!MUS.playing)return;
     MUS.playing=false;MUS.gen++;
-    var now=AC.currentTime,cur=null;
-    MUS.q.forEach(function(e){if(e.startAt<=now&&now<e.end)cur=e;});
-    if(cur){MUS.resumeI=cur.i;MUS.resumeOff=Math.min(now+.8-cur.startAt,cur.end-cur.startAt-1);}
     rampMus(0);
     MUS.stopT=setTimeout(stopQueue,900);
   }
 }
+/* a fresh audio engine: phones can leave a context "running" but silent
+   after the app was in the background, so the music toggle and the first tap
+   after coming back rebuild it from scratch */
+var audioStale=false;
+function resetAudio(){
+  clearTimeout(MUS.stopT);
+  stopQueue();MUS.playing=false;MUS.gen++;MUS.buf={};
+  var old=AC;AC=null;MASTER=null;MUSB=null;LIM=null;BUF={};BUFN={};cardVoice=null;
+  if(old){try{if(old.close)old.close();}catch(e){}}
+  audioStale=false;
+  return audio();
+}
+document.addEventListener("visibilitychange",function(){
+  if(document.hidden){
+    clearTimeout(MUS.stopT);stopQueue();MUS.playing=false;MUS.gen++;
+    if(AC&&AC.suspend){try{AC.suspend();}catch(e){}}
+    audioStale=true;
+  }else if(AC&&!IOS&&AC.resume){
+    /* desktop and Android usually come back cleanly; iPhone waits for the first tap */
+    try{
+      var p=AC.resume();
+      if(p&&p.then)p.then(function(){
+        if(!document.hidden&&AC&&AC.state==="running"){audioStale=false;if(musOn&&!MUS.playing)music(true);}
+      },function(){});
+    }catch(e){}
+  }
+});
 var START=1000;
 var startPick=1000;
 try{var sv=parseInt(localStorage.getItem("bj-start"),10);if(sv>=10&&sv<=1000000)startPick=sv;}catch(e){}
@@ -700,7 +817,8 @@ var RULES={},PENDING=null,STRAT=null,DECKS,SHOETOTAL,RESHUFFLE;
   }
 })();
 var RC=0,SEEN=0,SEENR={},countVisible=false;
-var CSM=false,TRAIN=false,trainMoves=0,trainErrs=0;
+var CSM=false,TRAIN=0,trainMoves=0,trainErrs=0;   /* TRAIN: 0 off, 1 train, 2 train+ */
+var cutOut=false,RIG=[];
 var ST;
 function resetStats(){ST={hands:0,won:0,lost:0,push:0,sur:0,bj:0,bust:0,dbl:0,dblW:0,dblL:0,dblP:0,dblNet:0,spl:0};}
 resetStats();
@@ -730,8 +848,31 @@ function shuffle(){
   for(var d=0;d<DECKS;d++)for(var s=0;s<4;s++)for(var r=0;r<13;r++)shoe.push({r:RANKS[r],s:SUITS[s].s,c:SUITS[s].c});
   for(var i=shoe.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=shoe[i];shoe[i]=shoe[j];shoe[j]=t;}
   RC=0;SEEN=0;SEENR={};
+  cutOut=false;hideCut();
 }
-function draw(){if((!CSM&&shoe.length<RESHUFFLE)||!shoe.length){shuffle();SFX.shuffle();}return shoe.pop();}
+/* a shoe with penetration: the cut card sits RESHUFFLE cards from the bottom.
+   When it comes out the round is finished from the cards that remain and the
+   shoe is shuffled before the next one. */
+function draw(){
+  if(RIG.length)return RIG.shift();
+  if(!shoe.length){shuffle();SFX.shuffle();}
+  if(!CSM&&!cutOut&&shoe.length<=RESHUFFLE){cutOut=true;showCut();}
+  return shoe.pop();
+}
+function showCut(){
+  var el=$("cutcard");if(!el)return;
+  SFX.cut();
+  el.classList.add("on");
+  if(REDUCED)return;
+  var from=$("shoe").getBoundingClientRect();
+  el.style.transition="none";el.style.transform="";
+  var to=el.getBoundingClientRect();
+  el.style.transform="translate("+((from.left+from.width/2)-(to.left+to.width/2))+"px,"+((from.top+from.height/2)-(to.top+to.height/2))+"px) rotate(-40deg) scale(.55)";
+  el.offsetHeight;
+  el.style.transition="transform .46s var(--ease),opacity .2s linear";
+  el.style.transform="";
+}
+function hideCut(){var el=$("cutcard");if(el){el.classList.remove("on");el.style.transform="";}}
 function unsee(c){
   if(!c._seen)return;
   c._seen=false;
@@ -830,8 +971,17 @@ function totalText(cs){
   if(s.t>21)return "Bust "+s.t;
   return s.soft?(s.t-10)+" / "+s.t:""+s.t;
 }
+/* what lies in the betting spot: the bet before the deal, then the hands'
+   stakes (a busted hand's chips are taken at once), then whatever the payout
+   animation has not moved yet */
+var STACKV=null,BANKSHOW=null;
+function stackTotal(){
+  if(STACKV!=null)return STACKV;
+  if(phase==="bet")return bet;
+  return hands.reduce(function(a,h){return a+(h.collected?0:h.bet);},0);
+}
 function renderChipsStack(){
-  var st=$("stack"),total=phase==="bet"?bet:hands.reduce(function(a,h){return a+h.bet;},0);
+  var st=$("stack"),total=stackTotal();
   st.innerHTML="";
   var denoms=[500,100,50,25,10],left=total,i,n;
   for(i=0;i<denoms.length;i++){
@@ -865,9 +1015,120 @@ function tossChip(source){
   },340);
 }
 function renderMeters(){
-  $("bank").textContent=bank;
-  $("bet").textContent=phase==="bet"?bet:hands.reduce(function(a,h){return a+h.bet;},0);
+  $("bank").textContent=BANKSHOW!=null?BANKSHOW:bank;
+  $("bet").textContent=stackTotal();
   renderChipsStack();
+}
+/* ---- chips after a hand: lost stakes go to the dealer, winnings come from
+   the dealer onto the spot, and everything that is yours slides to your chips ---- */
+var PAY={gen:0,T:[],G:[],raf:0},PAYO=null;
+function chipVals(amount,max){
+  var d=[500,100,50,25,10],o=[],left=amount,i;
+  for(i=0;i<d.length&&o.length<max;i++)while(left>=d[i]&&o.length<max){o.push(d[i]);left-=d[i];}
+  if(!o.length&&amount>0)o.push(10);
+  return o;
+}
+function dealerSpot(){
+  var r=$("dhand").getBoundingClientRect();
+  if(!r.width){var t=$("tbl").getBoundingClientRect();return {left:t.left+t.width/2-20,top:t.top+40,width:40,height:40};}
+  return r;
+}
+function ghostChips(vals,from,own){
+  var out=[],i;
+  for(i=0;i<vals.length;i++){
+    var g=document.createElement("div");
+    g.className="chip ghostchip pay";g.setAttribute("data-v",vals[i]);g.textContent=vals[i];
+    g.style.left=(from.left+from.width/2-13+(i-(vals.length-1)/2)*7)+"px";
+    g.style.top=(from.top+from.height/2-13-i*1.5)+"px";
+    document.body.appendChild(g);out.push(g);
+    if(!own)PAY.G.push(g);
+  }
+  return out;
+}
+function sendChips(gs,to,ms,fade){
+  gs.forEach(function(g,i){
+    var r=g.getBoundingClientRect();
+    var dx=to.left+to.width/2-(r.left+r.width/2),dy=to.top+to.height/2-(r.top+r.height/2);
+    g.offsetHeight;
+    g.style.transition="transform "+ms+"ms var(--ease) "+(i*32)+"ms,opacity "+Math.round(ms*.6)+"ms linear "+(i*32+Math.round(ms*.4))+"ms";
+    g.style.transform="translate("+dx.toFixed(1)+"px,"+dy.toFixed(1)+"px)"+(fade?" scale(.72)":"");
+    if(fade)g.style.opacity="0";
+  });
+}
+function dropChips(gs){gs.forEach(function(g){if(g.parentNode)g.parentNode.removeChild(g);var k=PAY.G.indexOf(g);if(k>=0)PAY.G.splice(k,1);});}
+function payLater(ms,fn){var gen=PAY.gen;PAY.T.push(setTimeout(function(){if(gen===PAY.gen)fn();},ms));}
+function payStop(){
+  PAY.gen++;PAY.T.forEach(clearTimeout);PAY.T=[];
+  PAY.G.slice().forEach(function(g){if(g.parentNode)g.parentNode.removeChild(g);});PAY.G=[];
+  if(PAY.raf&&window.cancelAnimationFrame)cancelAnimationFrame(PAY.raf);
+  if(STACKV!=null&&phase==="done")STACKV=0;
+  BANKSHOW=null;
+}
+function countBank(from,to,ms){
+  var gen=PAY.gen,t0=null;
+  if(from===to||!window.requestAnimationFrame){BANKSHOW=null;renderMeters();return;}
+  function step(now){
+    if(gen!==PAY.gen)return;
+    if(t0===null)t0=now;
+    var k=Math.min(1,(now-t0)/ms),e=1-Math.pow(1-k,3);
+    BANKSHOW=Math.round(from+(to-from)*e);
+    $("bank").textContent=BANKSHOW;
+    if(k<1)PAY.raf=requestAnimationFrame(step);else{BANKSHOW=null;renderMeters();}
+  }
+  PAY.raf=requestAnimationFrame(step);
+}
+function payout(o){
+  payStop();
+  var stake=o.lost+o.back,mine=o.back+o.won;
+  if(REDUCED){STACKV=0;BANKSHOW=null;renderMeters();return;}
+  STACKV=stake;BANKSHOW=o.from;renderMeters();
+  var t=60;
+  if(o.lost>0){
+    payLater(t,function(){
+      var gs=ghostChips(chipVals(o.lost,5),$("stack").getBoundingClientRect());
+      STACKV=stake-o.lost;renderMeters();
+      sendChips(gs,dealerSpot(),400,true);
+      payLater(640,function(){dropChips(gs);});
+    });
+    t+=360;
+  }
+  if(o.won>0){
+    payLater(t,function(){
+      var gs=ghostChips(chipVals(o.won,6),dealerSpot());
+      sendChips(gs,$("stack").getBoundingClientRect(),400,false);
+      payLater(400+gs.length*32,function(){dropChips(gs);STACKV=o.back+o.won;renderMeters();});
+    });
+    t+=560;
+  }
+  payLater(t+140,function(){
+    if(mine>0){
+      var gs=ghostChips(chipVals(mine,6),$("stack").getBoundingClientRect());
+      STACKV=0;renderMeters();
+      sendChips(gs,$("bank").getBoundingClientRect(),430,true);
+      payLater(260,function(){countBank(o.from,o.to,520);});
+      payLater(700,function(){dropChips(gs);});
+    }else{STACKV=0;BANKSHOW=null;renderMeters();if(o.from!==o.to)countBank(o.from,o.to,520);}
+  });
+}
+/* a busted hand: the dealer takes its chips straight away */
+function collectBust(h){
+  h.collected=true;
+  SFX.lose();
+  var from=$("stack").getBoundingClientRect();
+  renderMeters();
+  if(REDUCED)return;
+  var gs=ghostChips(chipVals(h.bet,5),from,true);
+  sendChips(gs,dealerSpot(),400,true);
+  setTimeout(function(){gs.forEach(function(g){if(g.parentNode)g.parentNode.removeChild(g);});},680);
+}
+/* the outcome, shown between ŽETONY and SÁZKA */
+function showResult(r){
+  var el=$("result");if(!el)return;
+  if(!r){el.className="meter mid";return;}
+  el.querySelector("b").textContent=r.label;
+  el.querySelector("u").textContent=signed(r.net);
+  el.className="meter mid";el.offsetHeight;
+  el.className="meter mid on "+(r.cls||(r.net>0?"win":(r.net<0?"lose":"push")));
 }
 function renderDealer(){
   var s=score(dealer);
@@ -911,6 +1172,11 @@ function renderActions(){
   if(phase==="even"){setPanel("even");$("deck").classList.toggle("busy",busy);return;}
   if(ph==="play"&&!hands.length)ph="bet";
   setPanel(ph);
+  if(ph==="done"){
+    var cut=cutOut&&!CSM;
+    document.querySelector('[data-act="again"]').hidden=cut;
+    document.querySelector('[data-act="reshuffle"]').hidden=!cut;
+  }
   $("deck").classList.toggle("busy",busy);
   if(ph==="bet"){
     setOff("clear",bet<=0);
@@ -943,8 +1209,10 @@ async function deal(){
   if(phase!=="bet"||busy)return;
   if(bet<=0){say("Nejdřív polož žetony na stůl.");return;}
   if(PENDING){var nr=PENDING;PENDING=null;if(applyRules(nr)){shuffle();SFX.shuffle();}}
+  payStop();STACKV=null;showResult(null);
   busy=true;phase="deal";lastBet=bet;roundOpen=bank;bank-=bet;
   hands=[{cards:[],bet:bet,fromSplit:false,acted:false,done:false,surrendered:false}];
+  RIG=TRAIN===2?rigScenario():[];
   dealer=[];ai=0;
   $("phands").innerHTML="";$("dhand").innerHTML="";$("dhand").className="hand";
   say("");render();
@@ -960,6 +1228,7 @@ async function deal(){
     if(i<order.length-1)await wait(240);
   }
   await Promise.all(jobs);
+  RIG=[];
   /* blackjack against an ace: offer even money before anything else is known */
   if(RULES.evenMoney&&isBJ(hands[0])&&dealer[0].r==="A"){
     phase="even";busy=false;
@@ -984,10 +1253,12 @@ async function afterDeal(){
 async function takeEven(){
   var h=hands[0];
   busy=true;phase="done";h.done=true;h.even=true;
+  PAYO={lost:0,won:h.bet,back:h.bet,from:bank};
   bank+=h.bet*2;ST.bj++;tally(h,"W",h.bet);
   render();await revealHole();busy=false;
   setTimeout(SFX.win,120);
-  say("Even money: <em>+"+h.bet+"</em>."+(dealer.length>1&&score(dealer).t===21?" Dealer měl blackjack, vyplatilo se.":""));
+  RESULT={label:"EVEN MONEY",net:h.bet,cls:"bj"};
+  say("Even money vyplaceno 1 : 1."+(dealer.length>1&&score(dealer).t===21?" Dealer měl blackjack, vyplatilo se.":""));
   finishRound();
 }
 async function declineEven(){
@@ -1004,6 +1275,25 @@ function evenAdvice(){
     why:"Dealer má blackjack zhruba v "+Math.round(p*100)+" % případů, takže hrát dál vynese v průměru "+keep.toFixed(2).replace(".",",")+"× sázky proti jisté 1,00×."+
       (take?" Even money se tu vyplatí.":" Even money je tu dlouhodobě horší volba.")};
 }
+/* after the cut card: clear the table, shuffle a new shoe, count back to zero */
+async function reshuffleShoe(){
+  if(busy||phase!=="done")return;
+  busy=true;hideToast();payStop();showResult(null);
+  hands=[];dealer=[];ai=0;STACKV=0;
+  $("phands").innerHTML="";$("dhand").innerHTML="";pill($("dpill"),"");
+  hideCut();
+  say("Dealer míchá novou shoe…");
+  renderMeters();$("deck").classList.add("busy");
+  SFX.shuffle();
+  var sh=$("shoe");sh.classList.remove("shuffling");sh.offsetHeight;if(!REDUCED)sh.classList.add("shuffling");
+  await wait(1500);
+  sh.classList.remove("shuffling");
+  shuffle();
+  phase="bet";busy=false;STACKV=null;
+  if(lastBet<=bank)bet=lastBet;
+  say("Nová shoe je zamíchaná a running count je zase na nule. Vsaď a nech rozdat.");
+  render();
+}
 async function revealHole(){
   if(dealer.length<2)return;
   var el=$("dhand").children[1];
@@ -1013,13 +1303,15 @@ async function hit(){
   var h=hands[ai];busy=true;render();
   var c=draw();h.cards.push(c);await place(h.el,c,false);
   busy=false;renderHandLabels();
-  if(score(h.cards).t>21)SFX.bust();
+  if(score(h.cards).t>21)collectBust(h);
   if(score(h.cards).t>=21){await nextHand();}else{render();}
 }
 async function double(){
   var h=hands[ai];bank-=h.bet;h.bet*=2;h.dbl=true;busy=true;render();
   var c=draw();h.cards.push(c);await place(h.el,c,false);
-  busy=false;renderHandLabels();await nextHand();
+  busy=false;renderHandLabels();
+  if(score(h.cards).t>21)collectBust(h);
+  await nextHand();
 }
 async function split(){
   var h=hands[ai];bank-=h.bet;busy=true;ST.spl++;
@@ -1055,9 +1347,11 @@ async function split(){
 function fitLayout(){
   var t=$("tbl");if(!t)return;
   var H=t.clientHeight,root=document.documentElement.style;
-  var fixed=50+6+44+2*30+10,ins=40;
-  var ch=Math.floor((H-fixed-ins)/2),tight=false;
-  if(ch<86){ch=Math.floor((H-fixed)/2);tight=true;}
+  /* the felt inscription always stays; on short screens it just gets smaller */
+  var fixed=50+6+44+2*30+10,tw=Math.max(200,t.clientWidth-32);
+  var insH=function(w){return Math.min(tw,w)*44/320+4;};
+  var ch=Math.floor((H-fixed-insH(340))/2),tight=false;
+  if(ch<86){ch=Math.floor((H-fixed-insH(270))/2);tight=true;}
   ch=Math.max(52,Math.min(116,ch));
   t.classList.toggle("tight",tight);
   root.setProperty("--card-h",ch+"px");root.setProperty("--card-w",Math.round(ch*.705)+"px");
@@ -1090,10 +1384,12 @@ function handFinished(h){
   return false;
 }
 async function surrender(){
-  var h=hands[ai];h.surrendered=true;h.done=true;
-  bank+=Math.floor(h.bet/2);tally(h,"R",0);
+  var h=hands[ai],half=Math.floor(h.bet/2);h.surrendered=true;h.done=true;
+  PAYO={lost:h.bet-half,won:0,back:half,from:bank};
+  bank+=half;tally(h,"R",0);
   busy=true;phase="done";render();SFX.give();await revealHole();busy=false;
-  say("Vzdal ses. Zpátky <em>"+Math.floor(h.bet/2)+"</em> žetonů.");
+  RESULT={label:"SURRENDER",net:half-h.bet,cls:"lose"};
+  say("Vzdal ses, polovina sázky se ti vrací.");
   finishRound();
 }
 async function nextHand(){
@@ -1136,30 +1432,38 @@ async function dealerTurn(){
   await wait(200);
   busy=false;settle();
 }
+var RESULT=null;
 function settle(){
   phase="done";
-  var ds=score(dealer).t,dbj=(dealer.length===2&&ds===21),parts=[],shortP=[],i,net=0;
+  var ds=score(dealer).t,dbj=(dealer.length===2&&ds===21),shortP=[],i,net=0,netLive=0,live=0,anyBJ=false,one="",label="";
+  PAYO={lost:0,won:0,back:0,from:bank};
   for(i=0;i<hands.length;i++){
-    var h=hands[i],ps=score(h.cards).t,tag="Hand "+(i+1)+": ";
-    if(hands.length===1)tag="";
+    var h=hands[i],ps=score(h.cards).t,res,w=0;
     if(h.surrendered){continue;}
-    if(isBJ(h)&&!dbj){var w=Math.round(h.bet*RULES.bj);bank+=h.bet+w;net+=w;parts.push(tag+"blackjack, <em>+"+w+"</em>");shortP.push((i+1)+": BJ <em>+"+w+"</em>");ST.bj++;tally(h,"W",w);}
-    else if(dbj&&isBJ(h)){bank+=h.bet;parts.push(tag+"blackjack proti blackjacku, push");shortP.push((i+1)+": push");tally(h,"P",0);}
-    else if(dbj){net-=h.bet;parts.push(tag+"dealer má blackjack, <em>\u2212"+h.bet+"</em>");shortP.push((i+1)+": <em>\u2212"+h.bet+"</em>");tally(h,"L",h.bet);}
-    else if(ps>21){net-=h.bet;parts.push(tag+"bust, <em>\u2212"+h.bet+"</em>");shortP.push((i+1)+": bust <em>\u2212"+h.bet+"</em>");ST.bust++;tally(h,"L",h.bet);}
-    else if(ds>21){bank+=h.bet*2;net+=h.bet;parts.push(tag+"dealer bust, <em>+"+h.bet+"</em>");shortP.push((i+1)+": <em>+"+h.bet+"</em>");tally(h,"W",h.bet);}
-    else if(ps>ds){bank+=h.bet*2;net+=h.bet;parts.push(tag+"vyhráváš, <em>+"+h.bet+"</em>");shortP.push((i+1)+": <em>+"+h.bet+"</em>");tally(h,"W",h.bet);}
-    else if(ps===ds){bank+=h.bet;parts.push(tag+"push");shortP.push((i+1)+": push");tally(h,"P",0);}
-    else{net-=h.bet;parts.push(tag+"dealer má víc, <em>\u2212"+h.bet+"</em>");shortP.push((i+1)+": <em>\u2212"+h.bet+"</em>");tally(h,"L",h.bet);}
+    if(isBJ(h)&&!dbj){w=Math.round(h.bet*RULES.bj);res="BJ";anyBJ=true;ST.bj++;tally(h,"W",w);
+      one="Blackjack, výplata "+(RULES.bj===1.5?"3 : 2":"6 : 5")+".";label="BLACKJACK";}
+    else if(dbj&&isBJ(h)){res="P";tally(h,"P",0);one="Blackjack proti blackjacku dealera.";label="PUSH";}
+    else if(dbj){res="L";tally(h,"L",h.bet);one="Dealer má blackjack.";label="DEALER BLACKJACK";}
+    else if(ps>21){res="L";ST.bust++;tally(h,"L",h.bet);one="Přetáhl jsi na "+ps+".";label="BUST";}
+    else if(ds>21){res="W";w=h.bet;tally(h,"W",w);one="Dealer přetáhl na "+ds+".";label="VÝHRA";}
+    else if(ps>ds){res="W";w=h.bet;tally(h,"W",w);one="Tvých "+ps+" proti "+ds+" dealera.";label="VÝHRA";}
+    else if(ps===ds){res="P";tally(h,"P",0);one="Oba máte "+ps+".";label="PUSH";}
+    else{res="L";tally(h,"L",h.bet);one="Dealer má "+ds+" proti tvým "+ps+".";label="PROHRA";}
+    var d=res==="L"?-h.bet:w;
+    net+=d;
+    if(res!=="L")bank+=h.bet+w;
+    /* chips of a busted hand are already gone */
+    if(!h.collected){
+      live++;netLive+=d;
+      if(res==="L")PAYO.lost+=h.bet;else{PAYO.back+=h.bet;PAYO.won+=w;}
+    }
+    shortP.push((i+1)+": "+(res==="BJ"?"BJ ":(ps>21?"bust ":""))+(res==="P"?"push":"<em>"+signed(d)+"</em>"));
   }
-  if(parts.length){
-    var anyBJ=false;
-    for(i=0;i<hands.length;i++)if(isBJ(hands[i])&&!dbj)anyBJ=true;
-    setTimeout(anyBJ?SFX.bj:(net>0?SFX.win:(net<0?SFX.lose:SFX.push)),120);
-  }
-  if(parts.length)say(hands.length>1?
-    (dbj?"Dealer má blackjack. ":(ds>21?"Dealer bust. ":"Dealer "+ds+". "))+"Ruka "+shortP.join(" · ")+" \u2014 celkem <em>"+signed(net)+"</em>":
-    parts.join(" · ")+".");
+  if(live)setTimeout(anyBJ?SFX.bj:(netLive>0?SFX.win:(netLive<0?SFX.lose:SFX.push)),120);
+  var played=hands.filter(function(x){return !x.surrendered;}).length;
+  if(played)say(hands.length>1?
+    (dbj?"Dealer má blackjack. ":(ds>21?"Dealer přetáhl na "+ds+". ":"Dealer má "+ds+". "))+"Ruka "+shortP.join(" · "):one);
+  RESULT=hands.length>1?{label:"BILANCE",net:net}:{label:label,net:net,cls:anyBJ?"bj":null};
   if(!REDUCED){
     var pills=document.querySelectorAll(".handbox .pill, #dpill"),k;
     for(k=0;k<pills.length;k++){
@@ -1173,7 +1477,13 @@ function finishRound(){
   var delta=bank-roundOpen,topped=false;
   if(bank<10){bank=START;topped=true;say(curMsg+" Žetony došly — dostáváš <em>"+fmt(START)+"</em> na dohrání.");}
   history.push({n:history.length+1,bank:bank,delta:delta,topped:topped});
-  bet=0;render();
+  if(cutOut&&!CSM)say(curMsg+" Vyšla řezací karta, před dalším kolem se míchá.");
+  bet=0;
+  showResult(RESULT);RESULT=null;
+  var o=PAYO;PAYO=null;
+  if(o){o.to=bank;STACKV=o.lost+o.back;BANKSHOW=o.from;}
+  render();
+  if(o)payout(o);
 }
 
 
@@ -1333,9 +1643,12 @@ function applyRules(next){
   DECKS=RULES.decks;SHOETOTAL=DECKS*52;CSM=RULES.csm;
   RESHUFFLE=Math.max(15,Math.round(SHOETOTAL*(1-RULES.pen)));
   STRAT=computeStrategy({decks:DECKS,h17:RULES.h17,peek:RULES.peek,das:RULES.das,surr:RULES.surr,hsa:RULES.hsa});
-  var ins=document.querySelector(".inscription");
-  if(ins)ins.innerHTML="Blackjack pays "+(RULES.bj===1.5?"3 to 2":"6 to 5")+
-    "<span>"+(RULES.h17?"dealer hits soft 17":"dealer must draw to 16 and stand on all 17s")+"</span>";
+  var i1=$("ins1"),i2=$("ins2");
+  if(i1){
+    i1.textContent="BLACKJACK PAYS "+(RULES.bj===1.5?"3 TO 2":"6 TO 5");
+    i2.textContent=RULES.h17?"DEALER MUST HIT SOFT 17":"DEALER MUST DRAW TO 16 AND STAND ON ALL 17s";
+    $("ins").setAttribute("aria-label",i1.textContent.toLowerCase()+", "+i2.textContent.toLowerCase());
+  }
   return shoeChanged;
 }
 function decksCz(n){return n+" "+(n===1?"balíček":(n<5?"balíčky":"balíčků"));}
@@ -1408,9 +1721,12 @@ function currentAdvice(){
   }
   var act={S:"stand",H:"hit",D:"double",P:"split",R:"surrender"}[code];
   var pr=h.cards.length===2&&val(h.cards[0])===val(h.cards[1]);
-  var desc=pr?("Pair of "+h.cards[0].r+"s"):((sc.soft?"Soft ":"Hard ")+sc.t);
-  return {code:code,act:act,label:CODE[code][0],
-    head:desc+" vs dealer "+(up===11?"A":up),
+  var pv=pr?val(h.cards[0]):0,pn=pv===11?"A":(pv===10?"10":String(pv));
+  var desc=pr?("Pair of "+pn+"s"):((sc.soft?"Soft ":"Hard ")+sc.t);
+  var upn=up===11?"A":String(up),head=desc+" vs dealer "+upn;
+  /* a two-card start can be dealt again in Train + */
+  var sit=h.cards.length===2?(pr?{k:"pair",v:pn,up:upn}:(sc.soft?{k:"soft",v:sc.t-11,up:upn}:{k:"hard",v:sc.t,up:upn})):null;
+  return {code:code,act:act,label:CODE[code][0],head:head,key:head+"|"+code,sit:sit,
     why:capped+reasonFor(code,sc.t,sc.soft,up)};
 }
 function renderAdvice(){
@@ -1419,13 +1735,15 @@ function renderAdvice(){
          'Basic strategy je spočítaná z plné shoe; hluboko v shoe se optimum posouvá podle true countu, train mode ale hodnotí podle basic strategy.')+
     (PENDING?' <em style="font-style:normal;color:var(--brass)">Nová pravidla začnou platit od dalšího kola.</em>':'')+
     '</span></div>';
-  var tt=$("trainToggle");
-  tt.textContent="Train mode: "+(TRAIN?"zapnuto":"vypnuto");
-  tt.classList.toggle("lit",TRAIN);
-  $("trainStats").innerHTML=TRAIN?
+  var tb=document.querySelectorAll("#trainSeg [data-train]"),ti;
+  for(ti=0;ti<tb.length;ti++)tb[ti].classList.toggle("on",+tb[ti].getAttribute("data-train")===TRAIN);
+  $("trainNote").textContent=TRAIN===2?
+    "Train +: místo náhodných karet chodí vybrané situace (splity, double, soft součty, hraniční a neintuitivní tahy), častěji ty, ve kterých chybuješ. Správná odpověď se řídí aktuálními pravidly; další karty jsou už náhodné.":
+    (TRAIN===1?"Každý tah mimo basic strategy ti hned ukáže okénko s opravou. Even money se nehodnotí.":
+    "Train ukazuje chyby hned při hře, Train + k tomu rozdává záludné situace.");
+  $("trainStats").innerHTML=(TRAIN?
     (trainMoves?'<p class="acc"><b>'+Math.round(100*(trainMoves-trainErrs)/trainMoves)+' %</b>'+
-      (trainMoves-trainErrs)+' z '+trainMoves+' tahů podle strategie</p>':
-      '<p class="acc">Každý tah mimo basic strategy ti hned ukáže okénko s opravou.</p>'):"";
+      (trainMoves-trainErrs)+' z '+trainMoves+' tahů podle strategie</p>':''):"")+mistakesHtml();
   $("bsTables").removeAttribute("data-built");
   var a=currentAdvice(),box=$("adviceBox");
   if(!a){box.innerHTML='<div class="advice"><u>Zatím není co radit</u><small>Nápověda ukáže správný tah, jakmile budeš mít rozdané karty.</small></div>';}
@@ -1483,10 +1801,13 @@ function renderHistory(){
     body.innerHTML='<p class="empty">Až dohraješ první kolo, uvidíš tady vývoj žetonů, poměr vyhraných rukou a úspěšnost doublů.</p>';
     return;
   }
-  var pts=[START],i,net=0,wins=0;
+  /* the running win/loss over the whole game: a top-up adds chips, not winnings,
+     so the line carries on instead of jumping back */
+  var pts=[0],i,net=0,wins=0;
   for(i=0;i<history.length;i++){
-    pts.push(history[i].bank);
     net+=history[i].delta;
+    history[i].cum=net;
+    pts.push(net);
     if(history[i].delta>0)wins++;
   }
   var lo=Math.min.apply(null,pts),hi=Math.max.apply(null,pts);
@@ -1497,19 +1818,22 @@ function renderHistory(){
     var y=pad+(H-2*pad)*(1-(pts[j]-lo)/(hi-lo));
     poly+=(j?" ":"")+x.toFixed(1)+","+y.toFixed(1);
   }
-  var zy=pad+(H-2*pad)*(1-(START-lo)/(hi-lo));
+  var zy=pad+(H-2*pad)*(1-(0-lo)/(hi-lo));
   var svg='<svg class="spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';
-  if(START>=lo&&START<=hi)svg+='<line x1="'+pad+'" y1="'+zy.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+zy.toFixed(1)+'" stroke="rgba(233,224,204,.22)" stroke-width="1" stroke-dasharray="3 3"/>';
+  if(0>=lo&&0<=hi)svg+='<line x1="'+pad+'" y1="'+zy.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+zy.toFixed(1)+'" stroke="rgba(233,224,204,.22)" stroke-width="1" stroke-dasharray="3 3"/>';
   svg+='<polyline points="'+poly+'" fill="none" stroke="'+(net>=0?"#7fc49a":"#d08a76")+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
-  sub.innerHTML=history.length+" kol · bilance <em style=\"font-style:normal;color:"+(net>=0?"#7fc49a":"#d08a76")+'">'+(net>=0?"+":"\u2212")+Math.abs(net)+"</em> · vyhraných kol "+wins+" · rozpětí "+lo+"\u2013"+hi;
+  var tops=history.filter(function(x){return x.topped;}).length;
+  sub.innerHTML=history.length+" kol · bilance <em style=\"font-style:normal;color:"+(net>=0?"#7fc49a":"#d08a76")+'">'+signed(net)+"</em> · vyhraných kol "+wins+
+    (tops?" · doplněno "+tops+"\u00d7":"")+" · žetony teď "+fmt(bank);
   var rows="";
   for(i=history.length-1;i>=0&&i>history.length-16;i--){
     var e=history[i],cls=e.delta>0?"up":(e.delta<0?"dn":"");
     rows+='<div class="hrow"><span>Kolo '+e.n+(e.topped?" · doplněno":"")+'</span>'+
       '<b class="'+cls+'">'+(e.delta>0?"+":(e.delta<0?"\u2212":"\u00b1"))+Math.abs(e.delta)+
-      '<span style="margin-left:10px">'+e.bank+'</span></b></div>';
+      '<span style="margin-left:10px">'+signed(e.cum)+'</span></b></div>';
   }
-  body.innerHTML=statsHtml()+'<h3 class="sec">Vývoj žetonů</h3>'+svg+rows;
+  body.innerHTML=statsHtml()+'<h3 class="sec">Celková výhra / prohra</h3>'+svg+
+    '<div class="hrow"><span>Kolo</span><b><span>výsledek</span><span style="margin-left:10px">celkem</span></b></div>'+rows;
 }
 function pct(a,b){return b?Math.round(100*a/b)+" %":"\u2014";}
 function signed(n){return (n>0?"+":(n<0?"\u2212":"\u00b1"))+fmt(Math.abs(n));}
@@ -1537,17 +1861,17 @@ function renderShoe(){
   var body=$("shoeBody");
   $("shoeSub").textContent=CSM?
     "Continuous shuffle: "+decksCz(DECKS)+", "+SHOETOTAL+" karet; odehrané se po každém kole vracejí zpátky na náhodné místo. Penetrace se tu neakumuluje a count se po každém kole vynuluje.":
-    decksCz(DECKS)+", "+SHOETOTAL+" karet. Karty se nevracejí \u2014 shoe se přemíchá při penetraci "+Math.round(RULES.pen*100)+" %, tedy až v ní zbyde méně než "+RESHUFFLE+" karet.";
+    decksCz(DECKS)+", "+SHOETOTAL+" karet. Karty se nevracejí. Řezací karta leží "+RESHUFFLE+" karet od konce (penetrace "+Math.round(RULES.pen*100)+" %): když vyjde, kolo se dohraje a pak se míchá nová shoe.";
   var rem=shoe.length,dealt=SHOETOTAL-rem;
   var pen=dealt/SHOETOTAL,toShuf=Math.max(0,rem-RESHUFFLE);
   var decksLeft=rem/52,tc=RC/Math.max(decksLeft,.25);
   var out='<div class="bar"><i style="width:'+(pen*100).toFixed(1)+'%"></i>'+
     '<u style="left:'+(((SHOETOTAL-RESHUFFLE)/SHOETOTAL)*100).toFixed(1)+'%"></u></div>'+
-    '<div class="barkey"><span>rozdáno '+dealt+'</span><span>přemíchání</span><span>'+SHOETOTAL+'</span></div>'+
+    '<div class="barkey"><span>rozdáno '+dealt+'</span><span>'+(CSM?'':'řezací karta')+'</span><span>'+SHOETOTAL+'</span></div>'+
     '<div class="stats">'+
     '<div class="stat"><b>ZBÝVÁ V SHOE</b><u>'+rem+' karet</u></div>'+
     '<div class="stat"><b>PENETRACE</b><u>'+(pen*100).toFixed(0)+' %</u></div>'+
-    '<div class="stat"><b>DO PŘEMÍCHÁNÍ</b><u>'+(CSM?'po tomto kole':(toShuf?toShuf+' karet':'příští karta'))+'</u></div>'+
+    '<div class="stat"><b>'+(CSM?'DO PŘEMÍCHÁNÍ':'DO ŘEZACÍ KARTY')+'</b><u>'+(CSM?'po tomto kole':(cutOut?'vyšla, míchá se':(toShuf?toShuf+' karet':'příští karta')))+'</u></div>'+
     '<div class="stat"><b>BALÍČKŮ ZBÝVÁ</b><u>'+decksLeft.toFixed(1)+'</u></div>'+
     '</div>';
   out+='<h3 class="sec">Running count (Hi-Lo)</h3>';
@@ -1589,10 +1913,125 @@ function showToast(played,adv){
   toastT=setTimeout(hideToast,4800);
 }
 function hideToast(){clearTimeout(toastT);var n=$("toast");if(n)n.classList.remove("on");}
-function toggleTrain(){
-  TRAIN=!TRAIN;
-  if(TRAIN){trainMoves=0;trainErrs=0;}else hideToast();
+function setTrain(m){
+  if(m&&!TRAIN){trainMoves=0;trainErrs=0;}
+  if(!m)hideToast();
+  TRAIN=m;
+  var b=$("trainBadge");
+  b.textContent=m===2?"TRAIN +":"TRAIN";b.classList.toggle("on",!!m);
   renderAdvice();
+}
+/* ---- the mistakes made in train mode, kept between visits ---- */
+var MIST={};
+try{MIST=JSON.parse(localStorage.getItem("bj-mist")||"{}")||{};}catch(e){MIST={};}
+function saveMist(){try{localStorage.setItem("bj-mist",JSON.stringify(MIST));}catch(e){}}
+function noteMistake(adv,played){
+  var m=MIST[adv.key]||(MIST[adv.key]={head:adv.head,right:adv.label,n:0,w:{},sit:adv.sit,t:0});
+  m.n++;m.w[played]=(m.w[played]||0)+1;m.t=Date.now();
+  if(adv.sit)m.sit=adv.sit;
+  saveMist();
+}
+function topMistakes(n){
+  return Object.keys(MIST).map(function(k){return MIST[k];})
+    .sort(function(a,b){return b.n-a.n||b.t-a.t;}).slice(0,n);
+}
+function mistakesHtml(){
+  var top=topMistakes(6),o,i;
+  if(!top.length)return TRAIN?'<p class="note">Zatím žádná chyba. Tady se budou sbírat situace, ve kterých nejčastěji uhýbáš od basic strategy.</p>':"";
+  o='<h3 class="sec">Nejčastější chyby</h3><div class="mist">';
+  for(i=0;i<top.length;i++){
+    var m=top[i],w=Object.keys(m.w).sort(function(a,b){return m.w[b]-m.w[a];})
+      .map(function(k){return ACTNAME[k]+(m.w[k]>1?" "+m.w[k]+"\u00d7":"");}).join(", ");
+    o+='<div class="hrow"><span>'+m.head+' \u2192 <em>'+m.right+'</em><small>místo toho jsi hrál: '+w+'</small></span><b>'+m.n+'\u00d7</b></div>';
+  }
+  return o+'</div><div class="mrow"><button class="act quiet" id="mistReset">Vymazat historii chyb</button></div>';
+}
+/* ---- Train +: hand-picked starting hands, weighted toward the decisions
+   players get wrong most. The right answer always comes from the strategy
+   computed for the active rules. ---- */
+var SCEN=(function(){
+  var L=[];
+  function add(t,k,v,ups){ups.split(" ").forEach(function(u){L.push({t:t,k:k,v:v,up:u});});}
+  /* simple ones */
+  add(1,"hard",11,"5 6");add(1,"hard",10,"9");add(1,"hard",9,"4");add(1,"hard",12,"6");add(1,"hard",16,"6");
+  add(1,"pair","8","6");add(1,"pair","A","6");add(1,"pair","10","6");add(1,"soft",8,"9");
+  /* where people hesitate */
+  add(2,"hard",12,"2 3 4");add(2,"hard",13,"2");add(2,"hard",9,"2 7");add(2,"hard",10,"10 A");add(2,"hard",11,"10");
+  add(2,"hard",15,"10");add(2,"hard",16,"10");
+  add(2,"pair","9","7 9");add(2,"pair","7","8");add(2,"pair","5","9 10");add(2,"pair","4","5");
+  add(2,"pair","2","3 8");add(2,"pair","3","8");add(2,"pair","6","2");
+  add(2,"soft",6,"2");add(2,"soft",2,"4 5");add(2,"soft",4,"4");add(2,"soft",7,"9 10");
+  /* the counter-intuitive ones */
+  add(3,"hard",11,"A");add(3,"hard",8,"6");add(3,"hard",13,"3");add(3,"hard",14,"10");
+  add(3,"hard",16,"9");add(3,"hard",15,"A");add(3,"hard",17,"A");
+  add(3,"soft",7,"2 3 A");add(3,"soft",8,"6");add(3,"soft",6,"3");add(3,"soft",3,"4");add(3,"soft",5,"4");
+  add(3,"pair","9","2 A");add(3,"pair","8","10 A");add(3,"pair","7","7");add(3,"pair","6","7");
+  add(3,"pair","4","6");add(3,"pair","3","2 3");add(3,"pair","2","2");
+  return L;
+})();
+var scenLast=[];
+function sitKey(s){return s.k+s.v+"v"+s.up;}
+/* whether the strategy's first choice can actually be played under these rules */
+function sitPlayable(s){
+  var ui=s.up==="A"?9:(+s.up)-2,rk;
+  if(s.k==="pair")rk=STRAT.pair[s.v==="A"?1:+s.v][ui];
+  else if(s.k==="soft")rk=STRAT.soft[11+s.v][ui];
+  else rk=STRAT.hard[s.v][ui];
+  var f=rk.charAt(0),tot=s.k==="pair"?(s.v==="A"?12:2*s.v):(s.k==="soft"?11+s.v:s.v),soft=s.k==="soft"||s.v==="A";
+  if(f==="D")return RULES.dbl==="any"||(!soft&&(RULES.dbl==="9-11"?tot>=9&&tot<=11:tot>=10&&tot<=11));
+  if(f==="R")return RULES.surr&&(RULES.peek||s.up!=="A")&&s.k!=="soft";
+  return true;
+}
+function pickScenario(){
+  var pool=[],W=0,i,s,w;
+  var mine=topMistakes(12).filter(function(m){return m.sit;});
+  /* a third of the time, one of your own repeat mistakes */
+  if(mine.length&&Math.random()<.33){
+    for(i=0;i<mine.length;i++){s=mine[i].sit;if(scenLast.indexOf(sitKey(s))<0){pool.push([s,mine[i].n]);W+=mine[i].n;}}
+  }
+  if(!pool.length){
+    for(i=0;i<SCEN.length;i++){
+      s=SCEN[i];if(scenLast.indexOf(sitKey(s))>=0)continue;
+      w=[0,1,1.7,2.4][s.t]*(sitPlayable(s)?1:.45);
+      pool.push([s,w]);W+=w;
+    }
+  }
+  var x=Math.random()*W;
+  for(i=0;i<pool.length;i++){x-=pool[i][1];if(x<=0)break;}
+  s=pool[Math.min(i,pool.length-1)][0];
+  scenLast.push(sitKey(s));if(scenLast.length>5)scenLast.shift();
+  return s;
+}
+var TENS=["10","J","Q","K"];
+function takeCard(test){
+  var idx=[],i;
+  for(i=0;i<shoe.length;i++)if(test(shoe[i].r))idx.push(i);
+  if(idx.length)return shoe.splice(idx[Math.floor(Math.random()*idx.length)],1)[0];
+  var r=TENS.concat(RANKS).filter(test)[0]||"2",su=SUITS[Math.floor(Math.random()*4)];
+  return {r:r,s:su.s,c:su.c};
+}
+function isRank(n){
+  if(n==="T"||n==="10")return function(r){return TENS.indexOf(r)>=0;};
+  return function(r){return r===n;};
+}
+function rigScenario(){
+  var s=pickScenario(),p;
+  if(s.k==="pair")p=[s.v,s.v];
+  else if(s.k==="soft")p=["A",String(s.v)];
+  else{
+    var opts=[],a,b;
+    for(a=2;a<=10;a++)for(b=a+1;b<=10;b++)if(a+b===s.v)opts.push([String(a),String(b)]);
+    p=opts.length?opts[Math.floor(Math.random()*opts.length)]:["10","10"];
+  }
+  if(Math.random()<.5)p=[p[1],p[0]];
+  var c1=takeCard(isRank(p[0])),c2=takeCard(isRank(p[1])),up=takeCard(isRank(s.up));
+  var out=[c1,up,c2];
+  if(RULES.peek){
+    /* the dealer has already peeked: the hole card never completes a blackjack here */
+    var bad=s.up==="A"?isRank("T"):(s.up==="10"?isRank("A"):function(){return false;});
+    out.push(takeCard(function(r){return !bad(r);}));
+  }
+  return out;
 }
 function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u2009");}
 function startLabel(){
@@ -1622,6 +2061,7 @@ function beginGame(){
   if(typeof c==="string"){$("startErr").textContent=c;$("startCustom").focus();return;}
   if(typeof c==="number")startPick=c;
   try{localStorage.setItem("bj-start",String(startPick));}catch(e){}
+  payStop();STACKV=null;showResult(null);
   START=startPick;bank=START;bet=0;lastBet=0;roundOpen=START;
   history=[];hands=[];dealer=[];ai=0;phase="bet";
   trainMoves=0;trainErrs=0;resetStats();
@@ -1674,6 +2114,7 @@ function commitSettings(){
   if(phase==="bet"||phase==="done"){
     PENDING=null;
     if(applyRules(DRAFT)){shuffle();SFX.shuffle();}
+    render();
     say(same?"Pravidla beze změny.":"Nová pravidla platí. "+rulesSummary());
   }else{
     PENDING=same?null:DRAFT;
@@ -1701,7 +2142,7 @@ function applySound(init){
   m.setAttribute("title",musOn?"Hudba zapnutá":"Hudba vypnutá");
   var hp=$("hapBtn");
   if(hp){
-    if(!navigator.vibrate){hp.style.display="none";}
+    if(!canBuzz()){hp.style.display="none";}
     else{
       hp.classList.toggle("muted",!hapOn);
       hp.setAttribute("title",hapOn?"Vibrace zapnuté":"Vibrace vypnuté");
@@ -1713,7 +2154,11 @@ function applySound(init){
 }
 function toggleSfx(){sfxOn=!sfxOn;applySound();if(sfxOn)SFX.chip();}
 function toggleHaptics(){hapOn=!hapOn;applySound();if(hapOn)buzz([0,20,50,20]);}
-function toggleMusic(){musOn=!musOn;applySound();music(musOn);}
+function toggleMusic(){
+  musOn=!musOn;applySound();
+  if(musOn){resetAudio();music(true);}
+  else music(false);
+}
 document.addEventListener("click",function(e){
   if(e.target.closest("#sndBtn")){toggleSfx();return;}
   if(e.target.closest("#musBtn")){toggleMusic();return;}
@@ -1721,7 +2166,8 @@ document.addEventListener("click",function(e){
   if(e.target.closest("#hapBtn")){toggleHaptics();return;}
   if(e.target.closest("#setBtn")){openModal("mSet");return;}
   if(e.target.closest("#shoe")){openModal("mShoe");return;}
-  audio();
+  if(e.target.closest(".hapi"))return;
+  if(audioStale||(AC&&AC.state!=="running"&&AC.state!=="suspended"))resetAudio();else audio();
   if(musOn&&!MUS.playing)music(true);
   if(e.target.closest("#helpBtn")){openModal("mHelp");return;}
   if(e.target.closest("#statBtn")){openModal("mHist");return;}
@@ -1735,7 +2181,9 @@ document.addEventListener("click",function(e){
       closeModals();openStart(false);return;
     }
     if(e.target.closest("#countToggle")){countVisible=!countVisible;renderShoe();return;}
-    if(e.target.closest("#trainToggle")){toggleTrain();return;}
+    var tg=e.target.closest("[data-train]");
+    if(tg){setTrain(+tg.getAttribute("data-train"));return;}
+    if(e.target.closest("#mistReset")){MIST={};saveMist();renderAdvice();return;}
     var sb=e.target.closest(".seg button[data-k]");
     if(sb&&!sb.disabled){var op=OPTS.filter(function(x){return x[0]===sb.getAttribute("data-k");})[0];DRAFT[op[0]]=op[2][+sb.getAttribute("data-j")][0];renderSettings();return;}
     if(e.target.closest("#setApply")){commitSettings();return;}
@@ -1755,11 +2203,12 @@ document.addEventListener("click",function(e){
   if(!b||busy)return;
   var a=b.getAttribute("data-act");
   SFX.tick();
-  if(TRAIN&&((phase==="play"&&"hit stand double split surrender".indexOf(a)>=0)||(phase==="even"&&(a==="even"||a==="noeven")))){
+  /* even money is left to taste: it is never graded */
+  if(TRAIN&&phase==="play"&&"hit stand double split surrender".indexOf(a)>=0){
     var adv=currentAdvice();
     if(adv){
       trainMoves++;
-      if(adv.act!==a){trainErrs++;showToast(a,adv);}
+      if(adv.act!==a){trainErrs++;noteMistake(adv,a);showToast(a,adv);}
       else hideToast();
     }
   }
@@ -1773,8 +2222,10 @@ document.addEventListener("click",function(e){
   else if(a==="surrender"){surrender();}
   else if(a==="even"){takeEven();}
   else if(a==="noeven"){declineEven();}
+  else if(a==="reshuffle"){reshuffleShoe();}
   else if(a==="again"){
-    hideToast();
+    if(cutOut&&!CSM){reshuffleShoe();return;}
+    hideToast();payStop();STACKV=null;showResult(null);
     phase="bet";hands=[];dealer=[];ai=0;
     $("phands").innerHTML="";$("dhand").innerHTML="";
     pill($("dpill"),"");
@@ -1800,7 +2251,7 @@ document.addEventListener("keydown",function(e){
     var b=document.querySelector('button.act[data-act="'+map[e.key.toLowerCase()]+'"]');
     if(b)b.click();
   }else if(e.key===" "||e.key==="Enter"){
-    var k=document.querySelector('.panel.on button.act.key:not(.off)');
+    var k=document.querySelector('.panel.on button.act.key:not(.off):not([hidden])');
     if(k&&document.activeElement.tagName!=="BUTTON"){e.preventDefault();k.click();}
   }
 });
